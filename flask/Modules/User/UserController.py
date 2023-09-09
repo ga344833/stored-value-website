@@ -1,6 +1,6 @@
+from .UserService import UserService 
+from  .dtos import loginDto,registerDto
 from flask import request,make_response,jsonify
-import dtos 
-from UserService import UserService 
 
 class UserController:
     def __init__(self):
@@ -12,11 +12,11 @@ class UserController:
                 params = request.get_json()
                 userName = params.get('userName', None)
                 passWord = params.get('passWord', None)
-                loginDto = dtos.loginDto(userName , passWord)
+                dto = loginDto(userName , passWord)
             else:
                 raise ValueError('data type error')    
 
-            result = self.UserService.login(loginDto)
+            result = self.UserService.login(dto)
         except Exception as msg:
             return make_response(
                 jsonify(
@@ -38,11 +38,11 @@ class UserController:
                 username = data.get("username")
                 password = data.get("password")
                 gender = data.get("gender")
-                registerDto = dtos.registerDto(fullname , phone , email , username , password , gender)
+                dto = registerDto(fullname , phone , email , username , password , gender)
             else:
                 raise ValueError('data type error')    
 
-            result = self.UserService.create(registerDto)
+            result = self.UserService.create(dto)
         except Exception as msg:
             return make_response(
                 jsonify(

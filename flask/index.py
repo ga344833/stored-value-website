@@ -3,7 +3,6 @@ from router import allRoute
 from sqlalchemy import create_engine , inspect
 import configparser
 from OrmModels.Base import Base
-from OrmModels import DB ,Products ,  Categories , Codes , Colors , ProductSize , ProductColor ,Sizes
 
 config = configparser.ConfigParser()
 config.read('config.ini')

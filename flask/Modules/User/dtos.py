@@ -5,7 +5,7 @@ class dto:
     def check():
         return 
 
-class loginDto(dto):
+class loginDto():
     def __init__(self , userName:str , passWord:str):
         self.userName = userName
         self.passWord = passWord
@@ -16,7 +16,7 @@ class loginDto(dto):
         if self.passWord == "":
             raise ValueError('pass_word required')
 
-class registerDto(dto):
+class registerDto():
     def __init__(self , fullname:str , phone:str , email:str , username:str , password:str , gender:str):
         self.fullname = fullname
         self.phone = phone

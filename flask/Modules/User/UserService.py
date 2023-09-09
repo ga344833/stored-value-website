@@ -14,6 +14,9 @@ class UserService:
     def login(self , dto:loginDto):
         dto.check()
         userinfo = self.UserRepo.getUserByName(dto.userName)
-        if userinfo['password'] != dto.passWord:
-            raise ValueError("password_no_match")
-        
+        if userinfo.password != dto.passWord:
+            return 2
+        if userinfo.internal == '0':
+            return 0
+        if userinfo.internal == '1':
+            return 1

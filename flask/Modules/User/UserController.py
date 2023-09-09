@@ -10,14 +10,26 @@ class UserController:
         try:
             if request.is_json:
                 params = request.get_json()
-                userName = params.get('userName', None)
-                passWord = params.get('passWord', None)
+                userName = params.get('username', None)
+                passWord = params.get('password', None)
+                print('username : '+str(userName))
+                print('passWord : '+str(passWord))
                 dto = loginDto(userName , passWord)
             else:
                 raise ValueError('data type error')    
 
             result = self.UserService.login(dto)
+            return make_response(
+                jsonify(
+                    {
+                        "success":"true",
+                        "message":str(result),
+                        "code": result
+                    }
+                )
+            )
         except Exception as msg:
+            print(msg)
             return make_response(
                 jsonify(
                     {

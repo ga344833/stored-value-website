@@ -15,6 +15,9 @@ class UserSchema(Schema):
     internal = fields.String()
 
 class User(Base):
+    
+    __tablename__ = 'user'
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     fullname = Column(String(80), unique=True, nullable=False)
     phone = Column(String(80), unique=True, nullable=False)

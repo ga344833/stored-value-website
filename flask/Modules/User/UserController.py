@@ -22,9 +22,9 @@ class UserController:
             return make_response(
                 jsonify(
                     {
-                        "success":"true",
-                        "message":str(result),
-                        "code": result
+                        "success":True,
+                        "code":result[0],
+                        "customers_data": result[1],
                     }
                 )
             )
@@ -55,6 +55,15 @@ class UserController:
                 raise ValueError('data type error')    
 
             result = self.UserService.create(dto)
+            
+            return make_response(
+                jsonify(
+                    {
+                        "success":result,
+                        "message":str(fullname)+" success create"
+                    }
+                ),
+            )
         except Exception as msg:
             return make_response(
                 jsonify(

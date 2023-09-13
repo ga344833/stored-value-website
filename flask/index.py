@@ -7,6 +7,11 @@ from OrmModels.Base import Base
 config = configparser.ConfigParser()
 config.read('config.ini')
 
+# 初始化 Redis 连接
+redis_host = config['REDIS']['host']
+redis_port = int(config['REDIS']['port'])
+redis_password = config['REDIS']['password']
+
 app = Flask(__name__)
 app.register_blueprint(allRoute, url_prefix="/api")
 

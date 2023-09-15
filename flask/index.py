@@ -13,6 +13,7 @@ redis_port = int(config['REDIS']['port'])
 redis_password = config['REDIS']['password']
 
 app = Flask(__name__)
+app.secret_key = config['INDEX']['SECRET_KEY']
 app.register_blueprint(allRoute, url_prefix="/api")
 
 # create table & migrate

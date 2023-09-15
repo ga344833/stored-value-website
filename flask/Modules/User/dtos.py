@@ -45,4 +45,14 @@ class registerDto():
         if self.gender == None:
             raise ValueError('need gender')
 
+class perfectInfoDto():
+    def __init__(self , country:str , ID_type:str , ID_number:str , profile_name:str):
+        self.userName = userName
+        self.passWord = passWord
+    
+    def check(self):
+        if self.userName == "":
+            raise ValueError('user_name required')
+        if self.passWord == "":
+            raise ValueError('pass_word required')
 

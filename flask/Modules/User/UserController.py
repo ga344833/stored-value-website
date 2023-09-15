@@ -1,6 +1,6 @@
 from .UserService import UserService 
-from  .dtos import loginDto,registerDto
-from flask import request,make_response,jsonify
+from  .dtos import loginDto,registerDto, perfectInfoDto
+from flask import request,make_response,jsonify,g
 
 class UserController:
     def __init__(self):
@@ -19,12 +19,20 @@ class UserController:
                 raise ValueError('data type error')    
 
             result = self.UserService.login(dto)
+            if result[0]:
+                token = self.UserService.generate_token(result[0])
+            else:
+                return make_response(jsonify({
+                        "success":"false",
+                        "message":"Authentication failed"
+                    }),401)
+            
             return make_response(
                 jsonify(
                     {
                         "success":True,
-                        "code":result[0],
-                        "customers_data": result[1],
+                        "code":result[1],
+                        "token":token,
                     }
                 )
             )
@@ -65,6 +73,65 @@ class UserController:
                 ),
             )
         except Exception as msg:
+            return make_response(
+                jsonify(
+                    {
+                        "success":"false",
+                        "message":str(msg)
+                    }
+                ),
+                400
+            )
+
+    def getCustomersInfo(self):
+        result = self.UserService.getCustomersInfo()
+        return result  
+
+    def get_customer_profile(self):      
+        try:
+            # 从 JWT token 中获取客户的用户 ID
+            customer_id = g.token.get('sub')
+            print(customer_id)
+            # 使用 customer_id 查询客户的个人信息
+            customer = self.UserService.getCustomerById(customer_id)
+            if customer:
+                return make_response(
+                jsonify(
+                    {
+                        "success":True,
+                        "customer":{"id":customer.id}
+                    }
+                ),
+            )
+            else:
+                return make_response(jsonify({'success':False,'message':"Customer not found"}),404)
+        except Exception as e:
+            return make_response(jsonify({'success':False,'message':str(e)}))
+
+    def PerfectInfo(self):
+        try:
+            if request.is_json:
+                params = request.get_json()
+                country = params.get('country', None)
+                ID_type = params.get('ID_type', None)
+                ID_number = params.get('ID_number', None)
+                profile_image = params.get('profile_image', None)
+                dto = perfectInfoDto(country , ID_type , ID_number , profile_image)
+            else:
+                raise ValueError('data type error')    
+
+            result = self.UserService.perfectInfo(dto)
+            return make_response(
+                jsonify(
+                    {
+                        "success":True,
+                        "code":result[0],
+                        "customers_data": result[1],
+                    }
+                )
+            )
+        except Exception as msg:
+            print(msg)
             return make_response(
                 jsonify(
                     {

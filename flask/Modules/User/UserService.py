@@ -1,6 +1,7 @@
 from .UserRepo import UserRepo
-from .dtos import registerDto,loginDto
-
+from .dtos import registerDto,loginDto,perfectInfoDto
+import jwt
+from datetime import datetime, timedelta
 class UserService:
     def __init__(self):
         self.UserRepo = UserRepo()
@@ -15,12 +16,32 @@ class UserService:
         dto.check()
         userinfo = self.UserRepo.getUserByName(dto.userName)
         if userinfo.password != dto.passWord:
-            return [2,None]
-        if userinfo.internal == '0': ## 等等把他修成 getuserinfo
-            customers_data = self.UserRepo.getAllCustomers()
-            return [0,customers_data]
+            return [userinfo,2]
+        if userinfo.internal == '0': 
+            return [userinfo,0]
         if userinfo.internal == '1':
             print(userinfo.fullname +" is servicer")
-            # 客服登录成功后，获取所有客户的数据并存储在后端
-            customers_data = self.UserRepo.getAllCustomers()
-            return [1,customers_data]
+            return [userinfo,1]
+    
+    def getCustomersInfo(self):
+        CustomersInfo = self.UserRepo.getCustomersInfo()
+        return CustomersInfo
+    
+    def getCustomerById(self, customer_id):
+        customer = self.UserRepo.getCustomerById(customer_id)
+        return customer
+    
+    # 生成 JWT 令牌
+    def generate_token(self,user):
+        payload = {
+            'sub' : user.id,
+            'exp' : datetime.utcnow() + timedelta(days=1),
+            'iat' : datetime.utcnow()
+        }
+        token = jwt.encode(payload,'yu023468',algorithm='HS256')
+        return token
+    
+    def perfectInfo(self,dto:perfectInfoDto):
+        dto.check()
+        result = self.UserRepo.perfectInfo(dto.country , dto.ID_type , dto.ID_number , dto.profile_image)
+        return result

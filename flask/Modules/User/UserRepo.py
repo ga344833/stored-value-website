@@ -21,30 +21,59 @@ class UserRepo:
         return True
 
     def getUserByName(self , userName:str)->dict:
-        userinfo = self.db.query(User).filter_by(username=userName).first()
-        return userinfo
+        try :
+            userinfo = self.db.query(User).filter_by(username=userName).first()
+            return userinfo
+        except Exception as e:
+            return {"error": "An error occurred while fetching customer data."}
     
     def getCustomersInfo(self): 
-        # 获取所有客户的数据
         try :
             customers = self.db.query(User).filter_by(internal='0').all()
-            # 将客户数据转换为字典列表
-            customers_data = [{"id": customer.id,              ## 09/14 : 目前少了很多顯示項目，因為還沒處理空值問題
+            customers_data = [{"id": customer.id,             
                             "fullname": customer.fullname,
                             "phone" : customer.phone,
                             "email": customer.email} for customer in customers]
             return customers_data
         except Exception as e:
-        # 处理异常，可以记录日志或返回适当的错误响应
             return {"error": "An error occurred while fetching customer data."}
     
     def getCustomerById(self,customer_id):
         try:
-            customer = self.db.query(User).filter_by(id=customer_id)
+            customer = self.db.query(User).filter_by(id=customer_id).first()
             return customer
         except Exception as e:
-        # 处理异常，可以记录日志或返回适当的错误响应
             return {"error": "An error occurred while fetching customer data."}
+        
+    def patchCustomerInfo(self, customer_id:int , country:str ,idtype:str,idnumber:str):
+        try:
+            customer = self.db.query(User).filter_by(id=customer_id).first()
+            if not customer:
+                return {'success': False, 'message': 'Customer not found'}
+            customer.country = country
+            customer.idtype = idtype
+            customer.idnumber = idnumber
+            self.db.commit()
+            return {'success': True, 'message': 'Success updating customer info'}
+        except Exception as e:
+            print(e)
+            return {"error": "An error occurred"}
+        
+    def uploadInfo(self,customer_id:int,file:bytes):
+        try:
+            customer = self.db.query(User).filter_by(id=customer_id).first()
+            if not customer:
+                return {'success': False, 'message': 'Customer not found'}
+            image_data = file.read()
+            file.seek(0)
+            print(image_data)
+            customer.profile_image = image_data
+            self.db.commit()
+            return {'success': True, 'message': 'Success updating customer info'}
+        except Exception as e:
+            print(e)
+            return {"error": "An error occurred"}
+
         
     # def perfectInfo(self,country:str ,ID_type:str,ID_number:str,profile_image:str):
     #     user = 

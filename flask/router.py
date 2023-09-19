@@ -5,19 +5,24 @@ from Middlewares.JWTMiddleware import JWTMiddleware
 
 allRoute = Blueprint('allRoute', __name__)
 
-@allRoute.post('/users')
+@allRoute.post('/users') #創建客戶
 def userRegister(): return UserController().create()
 
-@allRoute.post('/login')
+@allRoute.post('/login') #登入
 def userLogin(): return UserController().login()
 
-@allRoute.post('/perfectinfo')
-def PerfectInfo(): return UserController().PerfectInfo()
-
-@allRoute.get('/customers')   ## 不要用 getAllcustomerinfo，All 會讓人誤會是讀取所有信息，但這個api只是獲取客戶信息。而C大寫的意義在於，常量成員命名通常以大寫來識別
-@JWTMiddleware.confirm_token  # 添加 JWTMiddleware 装饰器
+@allRoute.get('/customers')   #獲取所有客戶資訊
+@JWTMiddleware.confirm_token  
 def getCustomersInfo(): return UserController().getCustomersInfo()
 
-@allRoute.get('/customer/profile')   
-@JWTMiddleware.confirm_token  # 添加 JWTMiddleware 装饰器
+@allRoute.get('/customer/profile')   #獲取自身客戶資訊
+@JWTMiddleware.confirm_token  
 def get_customer_profile(): return UserController().get_customer_profile()
+
+@allRoute.patch('/customer/profile') #修改客戶資訊
+@JWTMiddleware.confirm_token  
+def patch_customer_profile(): return UserController().patch_customer_profile()
+
+@allRoute.post('/customer/upload_image') # 上傳驗證照片
+@JWTMiddleware.confirm_token
+def upload_image(): return UserController().upload_image()

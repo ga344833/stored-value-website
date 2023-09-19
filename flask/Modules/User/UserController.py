@@ -1,12 +1,12 @@
 from .UserService import UserService 
-from  .dtos import loginDto,registerDto, perfectInfoDto
+from  .dtos import loginDto,registerDto,perfectInfoDto,ImageDto
 from flask import request,make_response,jsonify,g
-
 class UserController:
     def __init__(self):
         self.UserService = UserService()
 
     def login(self):
+        print('--UserController stage--')
         try:
             if request.is_json:
                 params = request.get_json()
@@ -19,14 +19,8 @@ class UserController:
                 raise ValueError('data type error')    
 
             result = self.UserService.login(dto)
-            if result[0]:
-                token = self.UserService.generate_token(result[0])
-            else:
-                return make_response(jsonify({
-                        "success":"false",
-                        "message":"Authentication failed"
-                    }),401)
             
+            token = self.UserService.generate_token(result[0])
             return make_response(
                 jsonify(
                     {
@@ -41,14 +35,15 @@ class UserController:
             return make_response(
                 jsonify(
                     {
-                        "success":"false",
-                        "message":str(msg)
+                        "success":False,
+                        "message":"no user info"
                     }
                 ),
                 400
             )
 
     def create(self):
+        print('--UserController stage--')
         try:
             if request.is_json:
                 data = request.get_json()
@@ -84,22 +79,34 @@ class UserController:
             )
 
     def getCustomersInfo(self):
+        print('--UserController stage--')
         result = self.UserService.getCustomersInfo()
         return result  
 
     def get_customer_profile(self):      
+        print('--UserController stage--')
         try:
             # 从 JWT token 中获取客户的用户 ID
             customer_id = g.token.get('sub')
-            print(customer_id)
+            print("customer_id : "+str(customer_id))
             # 使用 customer_id 查询客户的个人信息
-            customer = self.UserService.getCustomerById(customer_id)
-            if customer:
+            customer_info = self.UserService.getCustomerById(customer_id)
+            if customer_info:
                 return make_response(
                 jsonify(
-                    {
-                        "success":True,
-                        "customer":{"id":customer.id}
+                    {   "success": True,
+                        "customer": {
+                            "id": customer_info['id'],
+                            "fullname": customer_info['fullname'],
+                            "phone": customer_info['phone'],
+                            "email": customer_info['email'],
+                            "country": customer_info['country'],
+                            "idtype": customer_info['idtype'],
+                            "idnumber": customer_info['idnumber'],
+                            "forzen": customer_info['forzen'],
+                            "gender": customer_info['gender'],
+                            "state": customer_info['state'],
+                            "profile_image":customer_info['profile_image']}
                     }
                 ),
             )
@@ -108,36 +115,58 @@ class UserController:
         except Exception as e:
             return make_response(jsonify({'success':False,'message':str(e)}))
 
-    def PerfectInfo(self):
+    def patch_customer_profile(self):      
         try:
+            # 从 JWT token 中获取客户的用户 ID
+            customer_id = g.token.get('sub')
+            print("customer_id : "+str(customer_id))
+            # 使用 customer_id 查询客户的个人信息
             if request.is_json:
-                params = request.get_json()
-                country = params.get('country', None)
-                ID_type = params.get('ID_type', None)
-                ID_number = params.get('ID_number', None)
-                profile_image = params.get('profile_image', None)
-                dto = perfectInfoDto(country , ID_type , ID_number , profile_image)
-            else:
-                raise ValueError('data type error')    
-
-            result = self.UserService.perfectInfo(dto)
-            return make_response(
+                data = request.get_json()
+                country = data.get("country")
+                idtype = data.get("idtype")
+                idnumber = data.get("idnumber")
+                dto = perfectInfoDto(customer_id,country , idtype , idnumber)
+                print(dto.customer_id)
+            patch_customer_info = self.UserService.patchCustomerInfo(dto)
+            if patch_customer_info:
+                return make_response(
                 jsonify(
-                    {
-                        "success":True,
-                        "code":result[0],
-                        "customers_data": result[1],
-                    }
-                )
-            )
-        except Exception as msg:
-            print(msg)
-            return make_response(
-                jsonify(
-                    {
-                        "success":"false",
-                        "message":str(msg)
+                    {   "success": patch_customer_info['success'],
+                        "message": patch_customer_info['message']
                     }
                 ),
-                400
             )
+            else:
+                return make_response(jsonify({'success':False,'message':"Customer not found"}),404)
+        except Exception as e:
+            return make_response(jsonify({'success':False,'message':str(e)}),500)
+
+    def upload_image(self):
+        print('--UserController stage--')
+        try:
+            # 从 JWT token 中获取客户的用户 ID
+            customer_id = g.token.get('sub')
+            print("customer_id : "+str(customer_id))
+            # 使用 customer_id 查询客户的个人信息
+            if 'file' not in request.files:
+                return make_response(jsonify({'success': False, 'message': 'No file part'}), 400)
+            file = request.files['file']
+            # 检查文件名是否为空
+            if file.filename == '':
+                return make_response(jsonify({'success': False, 'message': 'No selected file'}), 400)
+            dto = ImageDto(customer_id,file)
+            upload_info = self.UserService.uploadInfo(dto)
+            #patch_customer_info = self.UserService.patchCustomerInfo(dto)
+            if upload_info:
+                return make_response(
+                jsonify(
+                    {   "success": upload_info['success'],
+                        "message": upload_info['message']
+                    }
+                ),
+            )
+            else:
+                return make_response(jsonify({'success':False,'message':"Customer not found"}),404)
+        except Exception as e:
+            return make_response(jsonify({'success':False,'message':str(e)}),500)

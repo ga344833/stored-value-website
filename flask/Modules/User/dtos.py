@@ -46,13 +46,23 @@ class registerDto():
             raise ValueError('need gender')
 
 class perfectInfoDto():
-    def __init__(self , country:str , ID_type:str , ID_number:str , profile_name:str):
-        self.userName = userName
-        self.passWord = passWord
-    
+    def __init__(self , customer_id:int , country:str , idtype:str , idnumber:str):
+        self.customer_id = customer_id
+        self.country = country
+        self.idtype = idtype
+        self.idnumber = idnumber
     def check(self):
-        if self.userName == "":
-            raise ValueError('user_name required')
-        if self.passWord == "":
-            raise ValueError('pass_word required')
+        if self.idtype == "":
+            raise ValueError('ID_type required')
+        if self.idnumber == "":
+            raise ValueError('ID_number required')
+
+class ImageDto():
+    def __init__(self ,customer_id:int, file:bytes):
+        self.customer_id = customer_id
+        self.file = file
+    def check(self):
+        if self.file == "":
+            raise ValueError('No selected file')
+        
 

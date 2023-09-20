@@ -27,7 +27,7 @@ class UserService:
     def getCustomersInfo(self):
         CustomersInfo = self.UserRepo.getCustomersInfo()
         return CustomersInfo
-    
+
     def patchCustomerInfo(self,dto:perfectInfoDto):
         dto.check()
         result = self.UserRepo.patchCustomerInfo(dto.customer_id , dto.country , dto.idtype , dto.idnumber)

@@ -7,7 +7,7 @@ class UserRepo:
     def __init__(self):
         self.db = session
     
-    def create(self , fullname:str , phone:str , email:str , username:str , password:str , gender:str , register_time=None):
+    def create(self , fullname:str , phone:str , email:str , username:str , password:str , gender:str , register_time=None , state=None):
         new_user = User(fullname=fullname,
         phone=phone,
         email=email,
@@ -15,7 +15,8 @@ class UserRepo:
         password=password,
         gender=gender,
         internal="0",
-        register_time=datetime.now())
+        register_time=datetime.now(),
+        state="waiting")
         self.db.add(new_user)
         self.db.commit()
         return True
@@ -43,7 +44,7 @@ class UserRepo:
             customer = self.db.query(User).filter_by(id=customer_id).first()
             return customer
         except Exception as e:
-            return {"error": "An error occurred while fetching customer data."}
+            return {"error": "An error occurred while fetching customer data. :"}
         
     def patchCustomerInfo(self, customer_id:int , country:str ,idtype:str,idnumber:str):
         try:
@@ -53,6 +54,7 @@ class UserRepo:
             customer.country = country
             customer.idtype = idtype
             customer.idnumber = idnumber
+            customer.state = "waiting"
             self.db.commit()
             return {'success': True, 'message': 'Success updating customer info'}
         except Exception as e:

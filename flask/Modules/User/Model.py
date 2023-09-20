@@ -18,6 +18,7 @@ class UserSchema(Schema):
     internal = fields.String()
     register_time = fields.DateTime()
     profile_image = fields.String()
+    state = fields.String()
 
 class User(Base):
     
@@ -36,9 +37,10 @@ class User(Base):
     internal = Column(String(1), unique=True, nullable=False)
     register_time = Column(DateTime(0), unique=True, nullable=False)
     profile_image = Column(BLOB, nullable=True)
+    state = Column(String(80), unique=True, nullable=False)
 
     def __init__(self , fullname:str , phone:str , email:str , username:str, password:str , gender:str , internal:str , register_time:None
-                 ,country=None, idtype=None, idnumber=None, profile_image=None):
+                 ,country=None, idtype=None, idnumber=None, profile_image=None,state=None):
         self.fullname = fullname
         self.phone = phone
         self.email = email
@@ -51,6 +53,7 @@ class User(Base):
         self.idtype = idtype  # 新添加的字段
         self.idnumber = idnumber  # 新添加的字段
         self.profile_image = profile_image  # 新添加的字段
+        self.state = state
     
     def serialize(self):
         user_schema = UserSchema()

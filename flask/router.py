@@ -15,6 +15,10 @@ def userLogin(): return UserController().login()
 @JWTMiddleware.confirm_token  
 def getCustomersInfo(): return UserController().getCustomersInfo()
 
+@allRoute.get('/customer/<int:customer_id>')   #獲取指定客戶資訊
+@JWTMiddleware.confirm_token  
+def getCustomerInfo(customer_id): return UserController().getCustomerInfo(customer_id)
+
 @allRoute.get('/customer/profile')   #獲取自身客戶資訊
 @JWTMiddleware.confirm_token  
 def get_customer_profile(): return UserController().get_customer_profile()
@@ -26,3 +30,4 @@ def patch_customer_profile(): return UserController().patch_customer_profile()
 @allRoute.post('/customer/upload_image') # 上傳驗證照片
 @JWTMiddleware.confirm_token
 def upload_image(): return UserController().upload_image()
+

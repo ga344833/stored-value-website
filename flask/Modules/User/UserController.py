@@ -81,7 +81,17 @@ class UserController:
     def getCustomersInfo(self):
         print('--UserController stage--')
         result = self.UserService.getCustomersInfo()
-        return result  
+        return result
+        
+    def getCustomerInfo(self,customer_id):
+        print('--UserController stage--')
+        servicer_id = g.token.get('sub')
+        print("servicer_id : "+str(servicer_id))
+        if servicer_id == 1: ## 篩選是否為客服人員、避免API被盜用、後續再規劃
+            result = self.UserService.getCustomerById(customer_id)
+            return result 
+        else:
+            return make_response(jsonify({'success':False,'message':'Non service staff'}))
 
     def get_customer_profile(self):      
         print('--UserController stage--')
@@ -91,22 +101,12 @@ class UserController:
             print("customer_id : "+str(customer_id))
             # 使用 customer_id 查询客户的个人信息
             customer_info = self.UserService.getCustomerById(customer_id)
+            # print(customer_info)
             if customer_info:
                 return make_response(
                 jsonify(
                     {   "success": True,
-                        "customer": {
-                            "id": customer_info['id'],
-                            "fullname": customer_info['fullname'],
-                            "phone": customer_info['phone'],
-                            "email": customer_info['email'],
-                            "country": customer_info['country'],
-                            "idtype": customer_info['idtype'],
-                            "idnumber": customer_info['idnumber'],
-                            "forzen": customer_info['forzen'],
-                            "gender": customer_info['gender'],
-                            "state": customer_info['state'],
-                            "profile_image":customer_info['profile_image']}
+                        "customer": customer_info
                     }
                 ),
             )

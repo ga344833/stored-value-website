@@ -1,5 +1,5 @@
 from .UserRepo import UserRepo
-from .dtos import registerDto,loginDto,perfectInfoDto,ImageDto
+from .dtos import registerDto,loginDto,perfectInfoDto,ImageDto,VerifyCustomerDto
 import jwt
 from datetime import datetime, timedelta
 import base64
@@ -81,6 +81,11 @@ class UserService:
                 customer_info['state'] = customer.state
         
         return customer_info
+    
+    def verifyCustomer(self, dto:VerifyCustomerDto):
+        dto.check()
+        customer = self.UserRepo.verifyCustomer(dto.customer_id,dto.state)
+        return customer
     
     # 生成 JWT 令牌
     def generate_token(self,user):

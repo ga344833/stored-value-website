@@ -65,4 +65,12 @@ class ImageDto():
         if self.file == "":
             raise ValueError('No selected file')
         
+class VerifyCustomerDto():
+    def __init__(self ,customer_id:int, state:str):
+        self.customer_id = customer_id
+        self.state = state
+    def check(self):
+        if self.state == "":
+            raise ValueError('No selected state')
+        
 

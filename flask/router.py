@@ -19,6 +19,10 @@ def getCustomersInfo(): return UserController().getCustomersInfo()
 @JWTMiddleware.confirm_token  
 def getCustomerInfo(customer_id): return UserController().getCustomerInfo(customer_id)
 
+@allRoute.patch('/customer/<int:customer_id>/verify')   #審核指定客戶資訊
+@JWTMiddleware.confirm_token  
+def verifyCustomer(customer_id): return UserController().verifyCustomer(customer_id)
+
 @allRoute.get('/customer/profile')   #獲取自身客戶資訊
 @JWTMiddleware.confirm_token  
 def get_customer_profile(): return UserController().get_customer_profile()

@@ -1,5 +1,5 @@
 from .UserService import UserService 
-from  .dtos import loginDto,registerDto,perfectInfoDto,ImageDto
+from  .dtos import loginDto,registerDto,perfectInfoDto,ImageDto,VerifyCustomerDto
 from flask import request,make_response,jsonify,g
 class UserController:
     def __init__(self):
@@ -90,6 +90,19 @@ class UserController:
         if servicer_id == 1: ## 篩選是否為客服人員、避免API被盜用、後續再規劃
             result = self.UserService.getCustomerById(customer_id)
             return result 
+        else:
+            return make_response(jsonify({'success':False,'message':'Non service staff'}))
+
+    def verifyCustomer(self,customer_id):
+        print('--UserController stage--')
+        servicer_id = g.token.get('sub')
+        print("servicer_id : "+str(servicer_id))
+        data = request.get_json()
+        state = data.get("state")
+        dto = VerifyCustomerDto(customer_id,state)
+        if servicer_id == 1: ## 篩選是否為客服人員、避免API被盜用、後續再規劃
+            result = self.UserService.verifyCustomer(dto)
+            return make_response(jsonify({'success':True,'message':'state success changed'})) 
         else:
             return make_response(jsonify({'success':False,'message':'Non service staff'}))
 

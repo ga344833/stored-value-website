@@ -46,6 +46,17 @@ class UserRepo:
         except Exception as e:
             return {"error": "An error occurred while fetching customer data. :"}
         
+    def verifyCustomer(self,customer_id:int,state:str):
+        try:
+            customer = self.db.query(User).filter_by(id=customer_id).first()
+            if not customer:
+                return {'success': False, 'message': 'Customer not found'}
+            customer.state = state
+            self.db.commit()
+            return customer
+        except Exception as e:
+            return {"error": "An error occurred while fetching customer data. :"}
+
     def patchCustomerInfo(self, customer_id:int , country:str ,idtype:str,idnumber:str):
         try:
             customer = self.db.query(User).filter_by(id=customer_id).first()

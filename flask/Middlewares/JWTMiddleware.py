@@ -17,7 +17,7 @@ class JWTMiddleware:
                 payload = jwt.decode(token,'yu023468',algorithms=['HS256'])
                 g.token = payload
                 print(payload)
-                print(func(*args, **kwargs))
+                # print(func(*args, **kwargs))
                 return func(*args, **kwargs)
             except jwt.ExpiredSignatureError:
                 return err_response("Token expired",401)

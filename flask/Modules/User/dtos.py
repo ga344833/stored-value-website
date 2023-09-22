@@ -61,10 +61,13 @@ class ImageDto():
     def __init__(self ,customer_id:int, file:bytes):
         self.customer_id = customer_id
         self.file = file
+        
     def check(self):
         if self.file == "":
             raise ValueError('No selected file')
         
+
+
 class VerifyCustomerDto():
     def __init__(self ,customer_id:int, state:str):
         self.customer_id = customer_id
@@ -73,4 +76,15 @@ class VerifyCustomerDto():
         if self.state == "":
             raise ValueError('No selected state')
         
+
+class CreateBankcardDto():
+    def __init__(self ,customer_id:int, card_number:str , bank:str):
+        self.customer_id = customer_id
+        self.card_number = card_number
+        self.bank = bank
+    def check(self):
+        # 簡易檢查: 
+        if 11 > len(self.card_number):
+            raise ValueError('card_number length does not match')
+            
 

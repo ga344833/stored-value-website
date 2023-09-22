@@ -1,5 +1,5 @@
 from .UserService import UserService 
-from  .dtos import loginDto,registerDto,perfectInfoDto,ImageDto,VerifyCustomerDto
+from  .dtos import loginDto,registerDto,perfectInfoDto,ImageDto,VerifyCustomerDto,CreateBankcardDto
 from flask import request,make_response,jsonify,g
 class UserController:
     def __init__(self):
@@ -128,6 +128,31 @@ class UserController:
         except Exception as e:
             return make_response(jsonify({'success':False,'message':str(e)}))
 
+    def get_bankcard_profile(self):      
+        print('--UserController stage--')
+        try:
+            # 从 JWT token 中获取客户的用户 ID
+            customer_id = g.token.get('sub')
+            print("customer_id : "+str(customer_id))
+            # 使用 customer_id 查询客户的个人信息
+            BankcardInfo = self.UserService.getBankcardById(customer_id)
+            # print(customer_info)
+            if BankcardInfo:
+                return make_response(
+                jsonify(
+                    {   "success": True,
+                        "bankcard": BankcardInfo
+                    }
+                ),
+            )
+            
+            else:
+                return make_response(jsonify({'success':False,'message':"Bankcard not found"}),404)
+        except Exception as e:
+            return make_response(jsonify({'success':False,'message':str(e)}))
+
+
+
     def patch_customer_profile(self):      
         try:
             # 从 JWT token 中获取客户的用户 ID
@@ -183,3 +208,60 @@ class UserController:
                 return make_response(jsonify({'success':False,'message':"Customer not found"}),404)
         except Exception as e:
             return make_response(jsonify({'success':False,'message':str(e)}),500)
+        
+    def createbankcard(self):
+        print('--UserController stage--')
+        try:
+            customer_id = g.token.get('sub')
+            print("customer_id : "+str(customer_id))
+            if request.is_json:
+                data = request.get_json()
+                card_number = data.get("card_number")
+                bank = data.get("bank")
+                dto = CreateBankcardDto(customer_id,card_number,bank)
+            else:
+                raise ValueError('data type error')    
+
+            result = self.UserService.createbankcard(dto)
+            
+            return make_response(
+                jsonify(result))
+        except Exception as msg:
+            return make_response(
+                jsonify(
+                    {
+                        "success":False,
+                        "message":str(msg)
+                    }
+                ),
+                400
+            )
+
+    def upload_bankcard_image(self):
+        print('--UserController stage--')
+        try:
+            # 从 JWT token 中获取客户的用户 ID
+            customer_id = g.token.get('sub')
+            print("customer_id : "+str(customer_id))
+            # 使用 customer_id 查询客户的个人信息
+            if 'file' not in request.files:
+                return make_response(jsonify({'success': False, 'message': 'No file part'}), 400)
+            file = request.files['file']
+            # 检查文件名是否为空
+            if file.filename == '':
+                return make_response(jsonify({'success': False, 'message': 'No selected file'}), 400)
+            dto = ImageDto(customer_id,file)
+            upload_info = self.UserService.uploadBankcardInfo(dto)
+            if upload_info:
+                return make_response(
+                jsonify(
+                    {   "success": upload_info['success'],
+                        "message": upload_info['message']
+                    }
+                ),
+            )
+            else:
+                return make_response(jsonify({'success':False,'message':"Customer not found"}),404)
+        except Exception as e:
+            return make_response(jsonify({'success':False,'message':str(e)}),500)
+ 

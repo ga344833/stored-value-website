@@ -13,7 +13,9 @@ def userLogin(): return UserController().login()
 
 @allRoute.get('/customers')   #獲取所有客戶資訊
 @JWTMiddleware.confirm_token  
-def getCustomersInfo(): return UserController().getCustomersInfo()
+def getCustomersInfo():
+    print('--t3--')
+    return UserController().getCustomersInfo()
 
 @allRoute.get('/customer/<int:customer_id>')   #獲取指定客戶資訊
 @JWTMiddleware.confirm_token  
@@ -35,3 +37,16 @@ def patch_customer_profile(): return UserController().patch_customer_profile()
 @JWTMiddleware.confirm_token
 def upload_image(): return UserController().upload_image()
 
+### bankcard
+
+@allRoute.get('/bankcard/profile')   #獲取自身銀行卡資訊
+@JWTMiddleware.confirm_token  
+def get_bankcard_profile(): return UserController().get_bankcard_profile()
+
+@allRoute.post('/bankcard/create') #創建銀行卡
+@JWTMiddleware.confirm_token
+def createbankcard(): return UserController().createbankcard()
+
+@allRoute.post('/bankcard/upload_image') # 上傳銀行卡照片
+@JWTMiddleware.confirm_token
+def upload_bankcard_image(): return UserController().upload_bankcard_image()

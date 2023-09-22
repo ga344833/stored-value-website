@@ -1,5 +1,5 @@
 from OrmModels.DB import session
-from Modules.User.Model import User
+from Modules.User.Model import User,Bankcard
 import redis
 import json
 from datetime import datetime
@@ -46,6 +46,13 @@ class UserRepo:
         except Exception as e:
             return {"error": "An error occurred while fetching customer data. :"}
         
+    def getBankcardById(self,customer_id):
+        try:
+            bankcard = self.db.query(Bankcard).filter_by(user_id=customer_id).first()
+            return bankcard
+        except Exception as e:
+            return {"error": "An error occurred while fetching customer data. :"}
+        
     def verifyCustomer(self,customer_id:int,state:str):
         try:
             customer = self.db.query(User).filter_by(id=customer_id).first()
@@ -79,18 +86,40 @@ class UserRepo:
                 return {'success': False, 'message': 'Customer not found'}
             image_data = file.read()
             file.seek(0)
-            print(image_data)
             customer.profile_image = image_data
             self.db.commit()
-            return {'success': True, 'message': 'Success updating customer info'}
+            return {'success': True, 'message': 'Success updated customer info'}
+        except Exception as e:
+            print(e)
+            return {"error": "An error occurred"}
+        
+    def uploadBankcardInfo(self,customer_id:int,file:bytes):
+        try:
+            bankcard = self.db.query(Bankcard).filter_by(user_id=customer_id).first()
+            if not bankcard:
+                return {'success': False, 'message': 'bankcard not found'}
+            image_data = file.read()
+            file.seek(0)
+            bankcard.card_image = image_data
+            self.db.commit()
+            return {'success': True, 'message': 'Success updated bankcard info'}
         except Exception as e:
             print(e)
             return {"error": "An error occurred"}
 
-        
-    # def perfectInfo(self,country:str ,ID_type:str,ID_number:str,profile_image:str):
-    #     user = 
-        
+
+    def createbankcard(self , customer_id:int,card_number:str,bank:str):
+        try:
+            bankcard = self.db.query(Bankcard).filter_by(user_id=customer_id).first()
+            if bankcard:
+                return {'success': False, 'message': "already have bankcard"}
+            bankcard = Bankcard(user_id=customer_id,card_number=card_number,state='waiting',bank=bank)
+            self.db.add(bankcard)
+            self.db.commit()
+            return {'success': True, 'message': 'Success updated bankcard info'}
+        except Exception as e:
+            print(e)
+            return {'success': False, 'message': "Fail to updated bankcard,plz check SQL"}
     
     # def cache_customers_data(self,customer_data):
     #     try:

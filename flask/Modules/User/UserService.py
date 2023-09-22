@@ -1,5 +1,5 @@
 from .UserRepo import UserRepo
-from .dtos import registerDto,loginDto,perfectInfoDto,ImageDto,VerifyCustomerDto
+from .dtos import registerDto,loginDto,perfectInfoDto,ImageDto,VerifyCustomerDto,CreateBankcardDto
 import jwt
 from datetime import datetime, timedelta
 import base64
@@ -36,6 +36,11 @@ class UserService:
     def uploadInfo(self,dto:ImageDto):
         dto.check()
         result = self.UserRepo.uploadInfo(dto.customer_id , dto.file)
+        return result
+    
+    def uploadBankcardInfo(self,dto:ImageDto):
+        dto.check()
+        result = self.UserRepo.uploadBankcardInfo(dto.customer_id , dto.file)
         return result
 
     def getCustomerById(self, customer_id):
@@ -82,6 +87,32 @@ class UserService:
         
         return customer_info
     
+    def getBankcardById(self, customer_id):
+        BankcardsInfo = self.UserRepo.getBankcardById(customer_id)
+        bankcard_info = {
+            'id' : BankcardsInfo.id,
+            'user_id': '',
+            'bank': '',
+            'card_number': '',
+            'card_image': '',
+            'state': ''
+            }
+        if 'user_id' in BankcardsInfo.__dict__:
+            bankcard_info['user_id'] = BankcardsInfo.user_id
+        if 'bank' in BankcardsInfo.__dict__:
+            bankcard_info['bank'] = BankcardsInfo.bank
+        if 'card_number' in BankcardsInfo.__dict__:
+            bankcard_info['card_number'] = BankcardsInfo.card_number
+        if 'state' in BankcardsInfo.__dict__:
+            bankcard_info['state'] = BankcardsInfo.state
+        if 'card_image' in BankcardsInfo.__dict__:
+            try:
+                img = base64.b64encode(BankcardsInfo.card_image).decode("utf-8")
+                bankcard_info['card_image'] = img
+            except:
+                pass
+        return bankcard_info
+        
     def verifyCustomer(self, dto:VerifyCustomerDto):
         dto.check()
         customer = self.UserRepo.verifyCustomer(dto.customer_id,dto.state)
@@ -101,3 +132,8 @@ class UserService:
         dto.check()
         result = self.UserRepo.perfectInfo(dto.country , dto.ID_type , dto.ID_number , dto.profile_image)
         return result
+    
+    def createbankcard(self , dto:CreateBankcardDto):
+        dto.check()
+        result = self.UserRepo.createbankcard(dto.customer_id , dto.card_number , dto.bank)
+        return result ## {'success': True, 'message': 'Success updated bankcard info'}

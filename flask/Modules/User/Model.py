@@ -58,3 +58,21 @@ class User(Base):
     def serialize(self):
         user_schema = UserSchema()
         return user_schema.dump(self)
+    
+class Bankcard(Base):
+    
+    __tablename__ = 'bankcard'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, unique=True, nullable=False)
+    card_number = Column(String(80), unique=True, nullable=False)
+    card_image = Column(BLOB, nullable=True)
+    state = Column(String(80), unique=True, nullable=False)
+    bank = Column(String(80), unique=True, nullable=False)
+
+    def __init__(self , user_id:int , card_number:str , state:str ,bank:str, pcard_image=None):
+        self.user_id = user_id
+        self.card_number = card_number
+        self.card_image = pcard_image  # 新添加的字段
+        self.state = state
+        self.bank = bank

@@ -1,6 +1,7 @@
 <template>
   <div>
     <h1>用戶界面</h1>
+    <!-- 用戶詳細信息 -->
     <table>
       <thead>
         <tr>
@@ -28,7 +29,6 @@
         </tr>
       </tbody>
     </table>
-
     <!-- 输入字段和确认按钮 -->
     <div v-if="isEditing">
       <div>
@@ -58,7 +58,52 @@
       ref="fileInput"
       style="display: none"
     />
+
+    <!-- 銀行卡信息 -->
+    <h2>銀行卡資訊</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>銀行</th>
+          <th>卡號</th>
+          <th>狀態</th>
+          <th>圖片</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="card in bankCards" :key="card.id">
+          <td>{{ card.id }}</td>
+          <td>{{ card.bank }}</td>
+          <td>{{ card.card_number }}</td>
+          <td>{{ card.state }}</td>
+          <img
+            :src="'data:image/png;base64,' + card.card_image"
+            alt="Profile Image"
+          />
+        </tr>
+      </tbody>
+    </table>
   </div>
+
+  <div v-if="showAddBankCardForm">
+    <label for="cardNumber">卡号：</label>
+    <input type="text" id="cardNumber" v-model="newBankCard.card_number" />
+
+    <label for="bank">银行：</label>
+    <input type="text" id="bank" v-model="newBankCard.bank" />
+
+    <button @click="addBankCard">保存银行卡</button>
+  </div>
+
+  <button @click="showAddBankCardForm = true">新增银行卡</button> |
+  <button @click="uploadBankcardImage">上傳銀行卡照片</button>
+  <input
+    type="file"
+    @change="handleBankCardFileChange"
+    ref="fileInput"
+    style="display: none"
+  />
 </template>
 
 <script>
@@ -68,6 +113,7 @@ export default {
   data() {
     return {
       customersData: [], // 存储从后端获取的客户数据
+      bankCards: [], // 存储从后端获取的銀行卡數據
       token: "",
       isEditing: false, // 控制是否显示输入字段和确认按钮
       newCountry: "", // 用于存储新的国家数据
@@ -75,6 +121,11 @@ export default {
       newIdNumber: "", // 用于存储新的验证密码数据
       alertMessage: "", // 提醒视窗的消息
       showAddProfile: true,
+      showAddBankCardForm: false,
+      newBankCard: {
+        card_number: "",
+        bank: "",
+      },
     };
   },
   created() {
@@ -88,6 +139,38 @@ export default {
   },
   methods: {
     // 新增方法以触发文件选择输入框的点击事件
+    uploadBankcardImage() {
+      this.$refs.fileInput.click(); // 触发文件选择输入框的点击事件
+    },
+
+    // 当用户选择文件后触发的事件处理函数
+    handleBankCardFileChange(event) {
+      const selectedPhoto = event.target.files[0];
+      if (!selectedPhoto) return; // 用户取消选择文件
+
+      // 创建一个FormData对象来包装文件
+      const formData = new FormData();
+      formData.append("file", selectedPhoto);
+
+      // 发送文件到后端API
+      const headers = {
+        Authorization: `Bearer ${this.token}`,
+      };
+      axios
+        .post("/api/bankcard/upload_image", formData, { headers })
+        .then((response) => {
+          // 处理上传成功的响应
+          console.log("Photo upload response:", response.data);
+          window.alert("銀行卡照片上傳成功！");
+          window.location.reload(); // 刷新页面，或根据需要执行其他操作
+        })
+        .catch((error) => {
+          // 处理上传失败的情况
+          console.error("Error uploading bankcard photo:", error);
+          window.alert("銀行卡照片上傳失敗。請稍後重試。");
+        });
+    },
+
     uploadVerificationPhoto() {
       this.$refs.fileInput.click(); // 触发文件选择输入框的点击事件
     },
@@ -165,14 +248,46 @@ export default {
       const headers = {
         Authorization: `Bearer ${this.token}`,
       };
-
+      // 获取客户数据
       axios
         .get("/api/customer/profile", { headers })
         .then((response) => {
           this.customersData = response.data;
+          // 获取銀行卡數據
+          axios // 多執行緒同時跑，會導致token同時呼叫當機，要包在裡面跑才能運行
+            .get("/api/bankcard/profile", { headers })
+            .then((response) => {
+              this.bankCards = response.data;
+            })
+            .catch((error) => {
+              console.error("Error fetching bank card data:", error);
+            });
         })
         .catch((error) => {
           console.error("Error fetching customer data:", error);
+        });
+    },
+    addBankCard() {
+      const headers = {
+        Authorization: `Bearer ${this.token}`,
+      };
+
+      axios
+        .post("/api/bankcard/create", this.newBankCard, { headers })
+        .then((response) => {
+          if (response.data.success) {
+            // 添加成功的处理逻辑，例如显示成功消息，刷新银行卡列表等
+            window.alert("银行卡信息已成功保存。");
+            // 可以选择刷新银行卡列表
+            this.fetchCustomersData();
+          } else {
+            // 添加失败的处理逻辑，例如显示错误消息
+            window.alert(response.data.message);
+          }
+        })
+        .catch((error) => {
+          console.error("Error adding bank card:", error);
+          window.alert("添加银行卡信息时发生错误，请稍后重试。");
         });
     },
   },

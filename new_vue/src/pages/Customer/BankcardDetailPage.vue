@@ -1,11 +1,11 @@
-<template lang="">
+<template lang="html">
     <div class="cover"> 
-        <p>個人資料頁</p>
+        <p>BankcardDetailPage</p>
     </div>
 </template>
 <script>
 export default {
-  name: "InfoPage",
+  name: "BankcardDetailPage",
 };
 </script>
 <style></style>

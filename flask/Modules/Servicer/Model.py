@@ -42,3 +42,17 @@ class User(Base):
     def serialize(self):
         user_schema = UserSchema()
         return user_schema.dump(self)
+    
+class Bankcard(Base):
+    
+    __tablename__ = 'bankcard'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, unique=True, nullable=False)
+    card_number = Column(String(80), unique=True, nullable=False)
+    state = Column(String(80), unique=True, nullable=False)
+
+    def __init__(self , user_id:int , card_number:str , state:str):
+        self.user_id = user_id
+        self.card_number = card_number
+        self.state = state

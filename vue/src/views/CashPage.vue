@@ -1,7 +1,7 @@
 <template lang="">
-    <div class="cover"> 
-        <p>this is cash page.</p>
-    </div>
+  <div class="cover">
+    <p>this is cash page.</p>
+  </div>
 </template>
 <script>
 export default {

@@ -104,16 +104,42 @@
     ref="fileInput"
     style="display: none"
   />
+  <h2>自身帳戶資訊</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>user_ID</th>
+        <th>帳戶</th>
+        <th>餘額</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="account in accountInfo" :key="account.id">
+        <td>{{ account.id }}</td>
+        <td>{{ account.user_id }}</td>
+        <td>{{ account.account_number }}</td>
+        <td>{{ account.balance }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <h2>入金</h2>
+  <div>
+    <input v-model="depositAmount" type="number" placeholder="輸入入金金額" />
+    <button @click="depositFunds">確定入金</button>
+  </div>
 </template>
 
 <script>
 import axios from "axios";
 
 export default {
+  name: "CustomerPage",
   data() {
     return {
       customersData: [], // 存储从后端获取的客户数据
       bankCards: [], // 存储从后端获取的銀行卡數據
+      accountInfo: [],
       token: "",
       isEditing: false, // 控制是否显示输入字段和确认按钮
       newCountry: "", // 用于存储新的国家数据
@@ -122,6 +148,7 @@ export default {
       alertMessage: "", // 提醒视窗的消息
       showAddProfile: true,
       showAddBankCardForm: false,
+      depositAmount: "",
       newBankCard: {
         card_number: "",
         bank: "",
@@ -143,6 +170,41 @@ export default {
       this.$refs.fileInput.click(); // 触发文件选择输入框的点击事件
     },
 
+    depositFunds() {
+      // 新的方法，用於觸發入金 API
+
+      const headers = {
+        Authorization: `Bearer ${this.token}`,
+      };
+
+      // 你需要根據你的 API 設計來調整這個部分
+      axios
+        .post(
+          `/api/account/create_payment`,
+          { amount: this.depositAmount },
+          { headers }
+        )
+
+        .then((response) => {
+          if (response) {
+            // 成功收到 API 回傳的重定向 URL
+            console.log("create payment...");
+            console.log(response);
+            console.log("create payment...");
+            console.log(response.data);
+            const newWindow = window.open();
+            newWindow.document.write(response.data.message);
+            newWindow.document.close();
+            newWindow.focus();
+          } else {
+            console.error("API response error:", response.data);
+          }
+        })
+        .catch((error) => {
+          console.error("Error depositing funds:", error);
+          // 處理 API 請求失敗的情況
+        });
+    },
     // 当用户选择文件后触发的事件处理函数
     handleBankCardFileChange(event) {
       const selectedPhoto = event.target.files[0];
@@ -253,11 +315,20 @@ export default {
         .get("/api/customer/profile", { headers })
         .then((response) => {
           this.customersData = response.data;
+          console.log("create profile...");
           // 获取銀行卡數據
           axios // 多執行緒同時跑，會導致token同時呼叫當機，要包在裡面跑才能運行
             .get("/api/bankcard/profile", { headers })
             .then((response) => {
               this.bankCards = response.data;
+              axios //
+                .get("/api/account/profile", { headers })
+                .then((response) => {
+                  this.accountInfo = response.data;
+                })
+                .catch((error) => {
+                  console.error("Error fetching bank card data:", error);
+                });
             })
             .catch((error) => {
               console.error("Error fetching bank card data:", error);

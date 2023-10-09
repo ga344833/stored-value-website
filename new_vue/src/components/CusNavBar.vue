@@ -17,19 +17,34 @@
         <ul class="navbar-nav me-auto mb-2 mb-sm-0">
           <li class="nav-item">
             <a class="nav-link" aria-current="page">
-              <router-link to="/">Main</router-link>
+              <router-link to="/">回登入頁面</router-link>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" aria-current="page">
-              <router-link to="/customer/cash">出入金紀錄</router-link>
+              <router-link to="/customer/homepage">主頁</router-link>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" aria-current="page">
-              <router-link to="/customer/record">轉帳紀錄</router-link>
+              <router-link to="/customer/users">客戶列表</router-link>
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page">
+              <router-link to="/customer/products">商品列表</router-link>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page">
+              <router-link to="/customer/deposit">儲值紀錄</router-link>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page">
+              <router-link to="/customer/allpurchaserecord">購買紀錄</router-link>
+            </a>
+          </li>  
         </ul>
         <form class="d-flex">
           <input

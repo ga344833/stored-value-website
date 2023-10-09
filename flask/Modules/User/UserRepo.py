@@ -1,5 +1,5 @@
 from OrmModels.DB import session
-from Modules.User.Model import User,Bankcard
+from Modules.User.Model import User,Bankcard,Account,Deposit,Product,Purchase_record
 import redis
 import json
 from datetime import datetime
@@ -8,22 +8,23 @@ class UserRepo:
         self.db = session
     
     def create(self , fullname:str , phone:str , email:str , username:str , password:str , gender:str , register_time=None , state=None):
-        new_user = User(fullname=fullname,
-        phone=phone,
-        email=email,
-        username=username,
-        password=password,
-        gender=gender,
-        internal="0",
-        register_time=datetime.now(),
-        state="waiting")
-        self.db.add(new_user)
-        self.db.commit()
-        return True
-
+        try:
+            customer = self.db.query(User).filter_by(username=username).first()
+            if customer:
+                return {"success":False,"message": "username has been used."}
+            else:
+                new_user = User(fullname=fullname,phone=phone,email=email,username=username,password=password
+                                ,gender=gender,internal="0",register_time=datetime.now(),state="waiting")
+                self.db.add(new_user)
+                self.db.commit()                
+                return {"success":True,
+                        "message":str(fullname)+" success create"}
+        except:
+            return {"success":False,"message": "An error occurred while Create customer data."}
+        
     def getUserByName(self , userName:str)->dict:
-        try :
-            userinfo = self.db.query(User).filter_by(username=userName).first()
+        try :            
+            userinfo = self.db.query(User).filter_by(username=userName).first()            
             return userinfo
         except Exception as e:
             return {"error": "An error occurred while fetching customer data."}
@@ -34,8 +35,34 @@ class UserRepo:
             customers_data = [{"id": customer.id,             
                             "fullname": customer.fullname,
                             "phone" : customer.phone,
-                            "email": customer.email} for customer in customers]
-            return customers_data
+                            "email": customer.email,
+                            "register_time":customer.register_time,
+                            "state":customer.state} for customer in customers]
+            customers_wainting_data = [{"id": customer.id,             
+                            "fullname": customer.fullname,
+                            "phone" : customer.phone,
+                            "email": customer.email,
+                            "register_time":customer.register_time,
+                            "state":customer.state} for customer in customers if customer.state == 'waiting']
+            return customers_data,customers_wainting_data
+        except Exception as e:
+            return {"error": "An error occurred while fetching customer data."}
+    
+    def getBankcardsInfo(self): 
+        try :
+            bankcards = self.db.query(Bankcard).all()
+            bankcards_data = [{"id": bankcard.id,             
+                            "user_id": bankcard.user_id,
+                            "bank" : bankcard.bank,
+                            "card_number": bankcard.card_number,
+                            "state":bankcard.state} for bankcard in bankcards]
+            bankcards_waiting_data = [{"id": bankcard.id,             
+                            "user_id": bankcard.user_id,
+                            "bank" : bankcard.bank,
+                            "card_number": bankcard.card_number,
+                            "state":bankcard.state} for bankcard in bankcards if bankcard.state == 'waiting']
+            
+            return bankcards_data,bankcards_waiting_data
         except Exception as e:
             return {"error": "An error occurred while fetching customer data."}
     
@@ -78,7 +105,23 @@ class UserRepo:
         except Exception as e:
             print(e)
             return {"error": "An error occurred"}
-        
+
+    def patchProductInfo(self,product_id:int, name:str, price:int ,amount:int): ## 前端輸入前、綁定原始資料
+        try:
+            product = self.db.query(Product).filter_by(id=product_id).first()
+            if not product:
+                return {'success': False, 'message': 'Product not found'}
+            product.price = price
+            product.name = name
+            product.amount = amount
+            product.date_modified=datetime.now()
+            self.db.commit()
+            return {'success': True, 'message': 'Success updating product info'}
+        except Exception as e:
+            print(e)
+            return {"error": "An error occurred,plz check python"}
+
+         
     def uploadInfo(self,customer_id:int,file:bytes):
         try:
             customer = self.db.query(User).filter_by(id=customer_id).first()
@@ -91,7 +134,7 @@ class UserRepo:
             return {'success': True, 'message': 'Success updated customer info'}
         except Exception as e:
             print(e)
-            return {"error": "An error occurred"}
+            return {"error": "An error occurred,plz check python"}
         
     def uploadBankcardInfo(self,customer_id:int,file:bytes):
         try:
@@ -105,8 +148,7 @@ class UserRepo:
             return {'success': True, 'message': 'Success updated bankcard info'}
         except Exception as e:
             print(e)
-            return {"error": "An error occurred"}
-
+            return {"error": "An error occurred,plz check python"}
 
     def createbankcard(self , customer_id:int,card_number:str,bank:str):
         try:
@@ -121,6 +163,92 @@ class UserRepo:
             print(e)
             return {'success': False, 'message': "Fail to updated bankcard,plz check SQL"}
     
+
+    def verifyBankcard(self,customer_id:int,state:str):
+        try:
+            bankcard = self.db.query(Bankcard).filter_by(user_id=customer_id).first()
+            if not bankcard:
+                return {'success': False, 'message': 'Bankcard not found'}
+            bankcard.state = state
+            self.db.commit()
+            return bankcard
+        except Exception as e:
+            return {"error": "An error occurred while fetching customer data. :"}
+
+    def CreateAccount(self ,customer_id:int,balance:int,account_number:str):
+        print("--2--")
+        try:
+            ## check user state
+            print(customer_id)
+            userinfo = self.db.query(User).filter_by(id=customer_id).first()
+            print(userinfo)
+            if userinfo.state != "approved":
+                return {'success': False, 'message': "user state not approved"}
+            print("--3--")
+            account = self.db.query(Account).filter_by(user_idnumber=userinfo.idnumber).first()
+            if account:
+                return {'success': False, 'message': "already have account"}
+            print("--4--")
+            account = Account(user=userinfo.fullname,user_idnumber=userinfo.idnumber,account_number=account_number,balance=balance,state="unforzen")
+            self.db.add(account)
+            self.db.commit()
+            return {'success': True, 'message': 'Success updated account info'}
+        except Exception as e:
+            print(e)
+            return {'success': False, 'message': "Fail to updated account,plz check SQL"}
+    
+    def getAccountById(self,customer_id):
+        try:
+            userinfo = self.db.query(User).filter_by(id=customer_id).first()
+            account = self.db.query(Account).filter_by(user_idnumber=userinfo.idnumber).first()
+            return account
+        except Exception as e:
+            return {"error": "An error occurred while fetching customer data. :"}
+
+    def getPurchaseRecordsById(self,customer_id):
+        try:
+            userinfo = self.db.query(User).filter_by(id=customer_id).first()
+            purchase_records = self.db.query(Purchase_record).filter_by(buyer=userinfo.fullname).all()
+            purchase_record_data = [{"id":purchase_record.id,
+                "buyer":purchase_record.buyer,
+                "purchase_time":purchase_record.purchase_time,
+                "product_item":purchase_record.product_item,
+                "item_id":purchase_record.item_id,
+                "product_amount":purchase_record.product_amount,
+                "total":purchase_record.total,
+                "buyer_balance":purchase_record.buyer_balance,
+                "after_purchase_balance":purchase_record.after_purchase_balance} for purchase_record in purchase_records]
+            return purchase_record_data
+        except Exception as e:
+            return {"error": "An error occurred while fetching customer data. :"}
+        
+    def getAllPurchaseRecordsById(self,customer_id):
+        try:
+            purchase_records = self.db.query(Purchase_record).all()
+            purchase_record_data = [{"id":purchase_record.id,
+                "buyer":purchase_record.buyer,
+                "purchase_time":purchase_record.purchase_time,
+                "product_item":purchase_record.product_item,
+                "item_id":purchase_record.item_id,
+                "product_amount":purchase_record.product_amount,
+                "total":purchase_record.total,
+                "buyer_balance":purchase_record.buyer_balance,
+                "after_purchase_balance":purchase_record.after_purchase_balance} for purchase_record in purchase_records]
+            return purchase_record_data
+        except Exception as e:
+            return {"error": "An error occurred while fetching customer data. :"}
+
+    
+    def CreateBalanceDeposit(self , customer_id:int,account_number:str,balance:int,remark:str):
+        try:
+            record = Deposit(user_id=customer_id,account_number=account_number,amount=balance,remark=remark,state='waiting')
+            self.db.add(record)
+            self.db.commit()
+            return {'success': True, 'message': 'Success updated Deposit info'}
+        except Exception as e:
+            print(e)
+            return {'success': False, 'message': "Fail to updated account,plz check SQL"}
+ 
     # def cache_customers_data(self,customer_data):
     #     try:
     #         redis_host = "localhost"
@@ -136,3 +264,81 @@ class UserRepo:
     #                 print(customer)
     #     except Exception as e:
     #         print("Error caching customer data:",str(e))
+
+    def createproduct(self , name:str,price:int,amount:int):
+        try:
+            product = self.db.query(Product).filter_by(name=name).first()
+            if product:
+                return {'success': False, 'message': "already have product"}
+            product = Product(name=name,price=price,amount=amount,date_add=datetime.now(),date_modified=datetime.now())
+            self.db.add(product)
+            self.db.commit()
+            return {'success': True, 'message': 'Success updated product'}
+        except Exception as e:
+            print(e)
+            return {'success': False, 'message': "Fail to updated product,plz check SQL"}
+    
+    def deleteproduct(self , name:str):
+        try:
+            product = self.db.query(Product).filter_by(name=name).first()
+            if product:
+                self.db.delete(product)
+                self.db.commit()
+                return {'success': True, 'message': 'Success delete product'}
+            else:
+                return {'success': False, 'message': "do not have this product"}
+        except Exception as e:
+            print(e)
+            return {'success': False, 'message': "Fail to delete product,plz check SQL"}
+
+    
+
+    def getproductsInfo(self): 
+        try :
+            products = self.db.query(Product).all()
+            products_data = [{"id": product.id,             
+                            "name": product.name,
+                            "price" : product.price,
+                            "amount": product.amount,
+                            "image":product.image,
+                            "date_add":product.date_add,
+                            "date_modified":product.date_modified} for product in products]
+            
+            return products_data
+        except Exception as e:
+            return {"error": "An error occurred while fetching customer data."}
+        
+    def CreatePurchaseRecord(self ,customer_id:int,buyer:str,product_item:str,item_id:int,product_amount:int,total:int,buyer_balance:int,after_purchase_balance:int):
+        try:
+            purchase_record = Purchase_record(buyer=buyer,
+                                     product_item=product_item,
+                                      item_id=item_id,
+                                      product_amount=product_amount,
+                                      total=total,
+                                      buyer_balance=buyer_balance,
+                                      after_purchase_balance=after_purchase_balance,
+                                      purchase_time=datetime.now())
+            self.db.add(purchase_record)
+            self.db.commit()
+            return {'success': True, 'message': 'Success instert purchase_record'}
+        except Exception as e:
+            print(e)
+            return {'success': False, 'message': "Fail to instert purchase_record,plz check SQL"}
+   
+    def ProcessPurchase(self ,useraccount,productinfo):
+        try:            
+            self.db.add(useraccount)
+            self.db.commit()
+            self.db.add(productinfo)
+            self.db.commit()
+            return {'success': True, 'message': 'Success change useraccount&productinfo'}
+        except Exception as e:
+            print(e)
+            return {'success': False, 'message': "Fail to change useraccount&productinfo,plz check SQL"}
+   
+    def getproductInfo(self,product_item:str): 
+        try :
+            product = self.db.query(Product).filter_by(name=product_item).first()   
+            return product
+        except Exception as e:
+            return {"error": "An error occurred while fetching product."}

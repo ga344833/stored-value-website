@@ -2,10 +2,10 @@
   <div id="app">
     <div class="text-center my-3">
       <div class="header-container">
-        <h2>johney simulation shit</h2>
+        <h2>johney simulation pay system</h2>
       </div>
       <div class="container">
-            <router-view></router-view>
+            <router-view></router-view> <!-- 中間的組件 隨著router 變動 -->
       </div>
     </div>
 
@@ -16,12 +16,10 @@
         </div>
       </footer>
     </div>
-
   </div>
 </template>
 
 <script>
-
 export default {
   name: "App",
 };

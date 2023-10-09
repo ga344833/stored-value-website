@@ -35,6 +35,7 @@
 import axios from "axios";
 
 export default {
+  name: "UserPage",
   data() {
     return {
       customersData: [], // 存储从后端获取的客户数据

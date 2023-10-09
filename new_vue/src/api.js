@@ -1,6 +1,6 @@
 import axios from 'axios';
  
-const baseurl = "http://127.0.0.1:8000"
+const baseurl = "http://127.0.0.1:5000"
 
 const mainRequest = axios.create({
     baseURL: baseurl+"/api/"
@@ -15,14 +15,14 @@ const storeRequest = axios.create({
 });
 
 // user相關 api
-export const apiUserRegister = data => mainRequest.post('/' , data);
-export const apiUserLogin = data => mainRequest.post('/login' , data);
-export const apiUserLogout = data => mainRequest.get('/logout' , data);
+// export const apiUserRegister = data => mainRequest.post('/' , data);
+// export const apiUserLogin = data => mainRequest.post('/login' , data);
+// export const apiUserLogout = data => mainRequest.get('/logout' , data);
 
 // book相關 api
-export const apiGetBooks = () => bookRequest.get('/');
-export const apiGetBooksAmount = () => bookRequest.get('/amount');
+// export const apiGetBooks = () => bookRequest.get('/');
+// export const apiGetBooksAmount = () => bookRequest.get('/amount');
 
-// store 相關 api
-export const apiGetStores = () =>storeRequest.get('/');
-export const apiGetStoresAmount = () =>storeRequest.get('/amount');
+// // store 相關 api
+// export const apiGetStores = () =>storeRequest.get('/');
+// export const apiGetStoresAmount = () =>storeRequest.get('/amount');

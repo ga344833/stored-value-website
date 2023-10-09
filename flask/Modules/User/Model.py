@@ -76,3 +76,88 @@ class Bankcard(Base):
         self.card_image = pcard_image  # 新添加的字段
         self.state = state
         self.bank = bank
+
+class Account(Base):
+    
+    __tablename__ = 'account'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user = Column(String(80), unique=True, nullable=False)
+    user_idnumber = Column(String(80), nullable=True)
+    account_number = Column(String(80), unique=True, nullable=False)
+    balance = Column(Integer, nullable=True)
+    state = Column(String(80), nullable=False)
+
+    def __init__(self , user:str ,user_idnumber:str, account_number:str , balance:int ,state:str):
+        self.user = user
+        self.user_idnumber = user_idnumber
+        self.account_number = account_number
+        self.balance = balance  # 新添加的字段
+        self.state = state
+
+class Deposit(Base):
+    
+    __tablename__ = 'customer_balance_deposit'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, unique=True, nullable=False)
+    account_id = Column(Integer, unique=True, nullable=False)
+    account_number = Column(String(80), unique=True, nullable=False)
+    amount = Column(Integer, nullable=True)
+    payment_time = Column(DateTime(0), unique=True, nullable=False)
+    pay_metnod = Column(String(80), unique=True, nullable=False)
+    state = Column(String(80), unique=True, nullable=False)
+    remark = Column(String(80), unique=True, nullable=False)
+
+    def __init__(self , user_id:int ,account_id:int, account_number:str , amount:int ,state:str,remark:str,payment_time=None):
+        self.user_id = user_id
+        self.account_id = account_id
+        self.account_number = account_number
+        self.amount = amount
+        self.state = state
+        self.payment_time = payment_time
+        self.remark = remark
+
+class Product(Base):
+    
+    __tablename__ = 'product'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(80), unique=True, nullable=False)
+    price = Column(Integer, nullable=False)
+    amount = Column(Integer, unique=True, nullable=False)
+    date_add = Column(DateTime(0), unique=True, nullable=False)
+    date_modified = Column(DateTime(0), unique=True, nullable=False)
+    image = Column(BLOB, nullable=True)
+
+    def __init__(self , name:str , price:str  , amount:str,  date_add:None,date_modified:None, image=None):
+        self.name = name
+        self.price = price
+        self.amount = amount
+        self.date_add = date_add
+        self.date_modified = date_modified
+        self.image = image
+
+class Purchase_record(Base):
+    
+    __tablename__ = 'purchase_record'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    buyer = Column(String(80), unique=True, nullable=False)
+    purchase_time = Column(DateTime(0), nullable=False)
+    product_item = Column(String(80), unique=True, nullable=False)
+    item_id = Column(Integer, unique=True, nullable=False)
+    product_amount = Column(Integer, unique=True, nullable=False)
+    total = Column(Integer, unique=True, nullable=False)
+    buyer_balance = Column(Integer, unique=True, nullable=False)
+    after_purchase_balance = Column(Integer, unique=True, nullable=False)
+
+    def __init__(self , buyer:str , purchase_time:None  , product_item:str, product_amount:int , total:int , item_id:int,buyer_balance:int,after_purchase_balance:int):
+        self.buyer = buyer
+        self.purchase_time = purchase_time
+        self.product_item = product_item
+        self.product_amount = product_amount
+        self.total = total
+        self.item_id = item_id
+        self.buyer_balance = buyer_balance
+        self.after_purchase_balance = after_purchase_balance

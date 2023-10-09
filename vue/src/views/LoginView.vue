@@ -29,6 +29,7 @@ import RegisterPopup from "@/components/RegisterPopup.vue";
 import ForgetpwPopup from "@/components/ForgetpwPopup.vue";
 
 export default {
+  name: "LoginPage",
   data() {
     return {
       isRegisterPopupVisible: false,

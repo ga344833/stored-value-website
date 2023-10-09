@@ -2,6 +2,9 @@
 
 以flask為後端、Vue為前端製作的簡易模擬儲值及客服管理網站
 
+![image](https://github.com/ga344833/Simulation-payment-system/assets/32910355/465ef740-13f9-46b9-8ddc-72ae22f632d3)
+
+
 包含以下功能 :
 
 * 登入系統 :

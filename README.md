@@ -15,6 +15,14 @@
   
 1.包含客戶列表、商品列表、儲值紀錄、購買紀錄
 
+![image](https://github.com/ga344833/stored-value-website/assets/32910355/949566fe-dd58-44d0-8eff-4902a27bce30)
+![image](https://github.com/ga344833/stored-value-website/assets/32910355/3521f9c4-f1b9-4ace-a6c6-ae34e2d280b2)
+![image](https://github.com/ga344833/stored-value-website/assets/32910355/78772b01-ac23-4360-9271-5f8219f3d3e5)
+
+
 * 會員介面 : 會員透過註冊後可登入系統、於個人介面完善資料提交審核，操作客服所開通的帳戶、進行儲值與購物
 
 1. 包含購物介面、個人資料、儲值紀錄、購買紀錄
+![image](https://github.com/ga344833/stored-value-website/assets/32910355/6f2e92f6-671b-4982-8651-72795534eaca)
+![image](https://github.com/ga344833/stored-value-website/assets/32910355/8c657e7b-48d6-47d1-8a88-24994c23b30a)
+![image](https://github.com/ga344833/stored-value-website/assets/32910355/bc960465-d7fd-4f38-9f88-03da05d4cde5)

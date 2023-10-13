@@ -5,7 +5,10 @@
 * 登入系統 :
   
 1.分為客服、會員兩種身分，以 JWT TOKEN 紀錄登入身分並各自擁有其操作介面
-  
+
+  ![image](https://github.com/ga344833/stored-value-website/assets/32910355/4ae0bb9c-4452-4d43-bd38-c06d93d3bf19)
+![image](https://github.com/ga344833/stored-value-website/assets/32910355/d8e8b7ca-42f1-4ed2-862f-dd61abeee06f)
+
 2.註冊及忘記密碼
 
 * 客服介面 : 客服可透過各列表查看各項紀錄、並擁有審核客戶資料、開通客戶虛擬帳戶、修改與新增商品列表等權限功能

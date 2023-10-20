@@ -1,6 +1,6 @@
 from .UserService import UserService 
 from ..payment.PaymentService import PaymentService
-from  .dtos import loginDto,registerDto,perfectInfoDto,ImageDto,VerifyCustomerDto,CreateBankcardDto,VerifyBankcardDto,CreateAccountDto,CreateProductDto,DeleteProductDto,PatchProductDto,CreatePurchaseRecordDto,ProcessPurchaseDto
+from  .dtos import loginDto,registerDto,perfectInfoDto,ImageDto,VerifyCustomerDto,CreateBankcardDto,VerifyBankcardDto,CreateAccountDto,CreateProductDto,DeleteProductDto,PatchProductDto,CreatePurchaseRecordDto,ProcessPurchaseDto,ReceiveresultDto
 from flask import request,make_response,jsonify,g,Response,render_template
 class UserController:
     def __init__(self):
@@ -21,8 +21,10 @@ class UserController:
                 raise ValueError('data type error')    
 
             result = self.UserService.login(dto)
-            
+            print('--1--')
+            print(result)
             token = self.UserService.generate_token(result[0])
+            print('--2--')
             return make_response(
                 jsonify(
                     {
@@ -44,7 +46,7 @@ class UserController:
                 400
             )
 
-    def create(self):
+    def UserRegister(self):## 客戶註冊
         print('--UserController stage--')
         try:
             if request.is_json:
@@ -62,7 +64,34 @@ class UserController:
             else:
                 raise ValueError('data type error')    
 
-            result = self.UserService.create(dto)
+            result = self.UserService.UserRegister(dto)
+            print("--3--")
+            return make_response(
+                jsonify(result),
+            )
+        except Exception as msg:
+            return make_response(
+                jsonify(
+                    {
+                        "success":False,
+                        "message":str(msg)
+                    }
+                ),
+                400
+            )
+
+    def SeriviceRegister(self):## 客服註冊
+        print('--UserController stage--')
+        try:
+            if request.is_json:
+                data = request.get_json()
+                fullname = data.get("name")
+                username = data.get("username")
+                password = data.get("password")
+            else:
+                raise ValueError('data type error')    
+
+            result = self.UserService.SeriviceRegister(fullname,username,password)
             print("--3--")
             return make_response(
                 jsonify(result),
@@ -93,9 +122,7 @@ class UserController:
         result = self.UserService.getproductsInfo()
         return make_response(jsonify({'success':True,'allinfo':result,'allsum':len(result)}))
 
-
-
-    def getCustomerInfo(self,customer_id):
+    def getCustomerInfo(self,customer_id): ## 客服或取客戶資訊
         print('--UserController stage--')
         servicer_id = g.token.get('sub')
         print("servicer_id : "+str(servicer_id))
@@ -105,7 +132,7 @@ class UserController:
         else:
             return make_response(jsonify({'success':False,'message':'Non service staff'}))
 
-    def verifyCustomer(self,customer_id):
+    def verifyCustomer(self,customer_id): ## 客服驗證資料
         print('--UserController stage--')
         servicer_id = g.token.get('sub')
         print("servicer_id : "+str(servicer_id))
@@ -388,9 +415,10 @@ class UserController:
         customer_id = g.token.get('sub')
         data = request.get_json()
         amount = data.get("amount")
-        Account_info = self.UserService.getAccountById(customer_id)
-        account_id = Account_info['account_number']
-        result = self.PaymentService.Accountdeposit(customer_id,amount,account_id)
+        account = data.get("account")
+        customername = data.get("customername")
+        
+        result = self.PaymentService.Accountdeposit(customer_id,amount,account,customername)
         result = render_template('payment.html', form_html=result)
         return make_response(jsonify({'success':True,'message':result}))
     
@@ -398,13 +426,12 @@ class UserController:
         print(request.form)
         amount = int(request.form['amount'])
         customer_id = int(request.form['CustomField1'])
-        account_id = request.form['CustomField2']
-        remark = request.form['CustomField3']
+        customername = request.form['CustomField2']
+        account_number = request.form['CustomField3']
         if 'testpay' == request.form['CustomField4']:
-            # step 1 把錢存到 customer_balance_deposit，帶上account_id、remark
-            # state = waiting
-            dto = CreateAccountDto(customer_id,account_id,amount,remark)
-            result = self.UserService.CreateBalanceDeposit(dto)
+            dto = ReceiveresultDto(amount,customer_id,customername,account_number)
+            ## 紀錄儲值成功、客戶金額增加
+            result = self.UserService.Receiveresult(dto)
             return '1|OK'
         
     def createproduct(self):
@@ -505,5 +532,18 @@ class UserController:
             PurchaseRecords = self.UserService.getPurchaseRecordsById(customer_id)      
             return make_response(jsonify({"success": True,
                     "PurchaseRecords": PurchaseRecords}),)            
+        except Exception as e:
+            return make_response(jsonify({'success':False,'message':str(e)}))
+        
+    def getTopupRecordsInfo(self):
+        print('--UserController stage--')
+        try:
+            servicer_id = g.token.get('sub')
+            if servicer_id == 1:    
+                result = self.UserService.getAllTopupRecordsInfo()
+                return make_response(jsonify({'success':True,'allinfo':result,'allsum':len(result)}))
+            else:
+                result = self.UserService.getTopupRecordsInfo(servicer_id)
+                return make_response(jsonify({'success':True,'allinfo':result,'allsum':len(result)}))
         except Exception as e:
             return make_response(jsonify({'success':False,'message':str(e)}))

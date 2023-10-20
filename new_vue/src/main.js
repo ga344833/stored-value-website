@@ -14,8 +14,10 @@ import UserhomePage from "./pages/User/UserhomePage.vue"
 import InfoPage from "./pages/User/InfoPage.vue"
 import BankcardPage from "./pages/User/BankcardPage.vue"
 import PurchaseRecordPage from "./pages/User/PurchaseRecordPage.vue"
+import TopupRecordPage from "./pages/User/TopupRecordPage.vue"
 
 import IntroPage from "./pages/User/IntroPage.vue"
+
 
 
 // 客服
@@ -29,8 +31,11 @@ import ProductviewPage from "./pages/Customer/ProductviewPage.vue"
 import BankcardDetailPage from "./pages/Customer/BankcardDetailPage.vue"
 
 import AllPurchaseRecordPage from "./pages/Customer/AllPurchaseRecordPage.vue"
+import AllTopupRecordPage from "./pages/Customer/AllTopupRecordPage.vue"
 import DepositDetailPage from "./pages/Customer/DepositDetailPage.vue"
 import RecordPage from "./pages/Customer/RecordPage.vue"
+
+
 
 const routes =[
     {
@@ -67,6 +72,11 @@ const routes =[
                 path:'purchaserecord',
                 name: "PurchaseRecordPage",
                 component : PurchaseRecordPage,
+            },
+            {
+                path:'topuprecord',
+                name: "TopupRecordPage",
+                component : TopupRecordPage,
             }
         ]
     },
@@ -115,6 +125,11 @@ const routes =[
                 path:'record',
                 name: "RecordPage",
                 component : RecordPage,
+            },
+            {
+                path:'topuprecord',
+                name: "AllTopupRecordPage",
+                component : AllTopupRecordPage,
             }
         ]
     },

@@ -9,13 +9,28 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="AccountModalLabel">前往儲值</h5>
+        <h5 class="modal-title" id="AccountModalLabel">儲值</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form class="row g-3 needs-validation" novalidate>
-  <div class="col-md-4">
-    <label for="topupamount" class="form-label">儲值金額:</label>
+    <div class="col-md-6">
+    <label for="topupamount" class="form-label">會員姓名 : {{account.user}}</label>
+    <div class="valid-feedback">
+    </div>
+  </div>
+    <div class="col-md-6">
+    <label for="topupamount" class="form-label">儲值帳戶 : {{account.account_number}}</label>
+    <div class="valid-feedback">
+    </div>
+  </div>
+  <div class="col-md-6">
+    <label for="topupamount" class="form-label">帳戶餘額 : {{account.balance}}</label>
+    <div class="valid-feedback">
+    </div>
+  </div>
+  <div class="col-md-6">
+    <label for="topupamount" class="form-label">輸入儲值金額 : </label>
     <input type="text" class="form-control" id="phone" v-model="topupamount" required>
     <div class="valid-feedback">
     </div>
@@ -33,6 +48,9 @@
 <script>
 import axios from "axios";
 export default {
+  props:{
+    account: Object,
+  },
   name: "TopUp", 
   data(){
     return{
@@ -56,9 +74,14 @@ export default {
     topup(){
       const headers = {
         Authorization: `Bearer ${this.token}`,
-      };  
+      };
+      const TopUpData = {
+        amount:this.topupamount,
+        customername:this.account.user,
+        account:this.account.account_number,
+      };
       axios
-      .post(`/api/account/create_payment`,{amount:this.topupamount},{ headers })
+      .post(`/api/account/create_payment`,TopUpData,{ headers })
       .then((res) => {
         console.log(res);
         const newWindow = window.open();

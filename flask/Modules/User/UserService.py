@@ -1,29 +1,53 @@
 from .UserRepo import UserRepo
-from .dtos import registerDto,loginDto,perfectInfoDto,ImageDto,VerifyCustomerDto,CreateBankcardDto,VerifyBankcardDto,CreateAccountDto,CreateProductDto,DeleteProductDto,PatchProductDto,CreatePurchaseRecordDto,ProcessPurchaseDto
+from .dtos import registerDto,loginDto,perfectInfoDto,ImageDto,VerifyCustomerDto,CreateBankcardDto,VerifyBankcardDto,CreateAccountDto,CreateProductDto,DeleteProductDto,PatchProductDto,CreatePurchaseRecordDto,ProcessPurchaseDto,ReceiveresultDto
 import jwt
 from datetime import datetime, timedelta
 import base64
+import hashlib
+import os
 class UserService:
     def __init__(self):
         self.UserRepo = UserRepo()
+    
+    def hash_password(password, salt):
+        password_salt = password + salt
+        hashed_password = hashlib.sha256(password_salt.encode()).hexdigest()
+        return hashed_password
 
-    def create(self , dto:registerDto):
+    def UserRegister(self , dto:registerDto):
         dto.check()
-        result = self.UserRepo.create(dto.fullname , dto.phone , dto.email , dto.username , dto.password , dto.gender)
+        salt = os.urandom(16).hex()
+        hashed_password = UserService.hash_password(dto.password,
+                                                    salt)
+        print(hashed_password)
+        result = self.UserRepo.UserRegister(dto.fullname ,
+                                             dto.phone ,
+                                            dto.email ,
+                                              dto.username ,
+                                                hashed_password ,
+                                                  dto.gender ,
+                                                   salt)
+        return result
+    
+    def SeriviceRegister(self , fullname,username,password):
+        salt = os.urandom(16).hex()
+        hashed_password = UserService.hash_password(password,
+                                                    salt)
+        print(hashed_password)
+        result = self.UserRepo.SeriviceRegister(fullname , username , hashed_password,salt)
         return result
 
     # 先依照username找出user 再比對密碼
     def login(self , dto:loginDto):
         dto.check()
-        userinfo = self.UserRepo.getUserByName(dto.userName)
-        print(userinfo.password)
-        if userinfo.password != dto.passWord:
-            return [userinfo,2]
-        if userinfo.internal == '0': 
-            return [userinfo,0]
-        if userinfo.internal == '1':
-            print(userinfo.fullname +" is servicer")
-            return [userinfo,1]
+        salt = self.UserRepo.getSaltinfo(dto.userName)
+        hashed_password = UserService.hash_password(dto.passWord,
+                                                    salt)
+        userinfo_dict = self.UserRepo.login(hashed_password)
+        if userinfo_dict.internal == '0':
+            return [userinfo_dict,0]
+        if userinfo_dict.internal == '1':
+            return [userinfo_dict,1]
     
     def getCustomersInfo(self):
         CustomersInfo = self.UserRepo.getCustomersInfo()
@@ -36,6 +60,16 @@ class UserService:
     def getproductsInfo(self):
         ProductsInfo = self.UserRepo.getproductsInfo()
         return ProductsInfo
+
+    def getAllTopupRecordsInfo(self):
+        TopupRecordsInfo = self.UserRepo.getAllTopupRecordsInfo()
+        return TopupRecordsInfo
+    
+    def getTopupRecordsInfo(self,servicer_id):
+        customer = self.UserRepo.getCustomerById(servicer_id)
+        username = customer.fullname
+        TopupRecordsInfo = self.UserRepo.getTopupRecordsInfo(username)
+        return TopupRecordsInfo
 
     def patchCustomerInfo(self,dto:perfectInfoDto):
         dto.check()
@@ -168,9 +202,11 @@ class UserService:
         return customer
     
     # 生成 JWT 令牌
-    def generate_token(self,user):
+    def generate_token(self,userinfo_dict):
+        print(userinfo_dict)
+        print(userinfo_dict.id)
         payload = {
-            'sub' : user.id,
+            'sub' : int(userinfo_dict.internal),
             'exp' : datetime.utcnow() + timedelta(days=1),
             'iat' : datetime.utcnow()
         }
@@ -222,16 +258,14 @@ class UserService:
         dto.check()
         useraccount = self.UserRepo.getAccountById(dto.customer_id)
         productinfo = self.UserRepo.getproductInfo(dto.product_item)
-
         buyer_balance = useraccount.balance
         after_purchase_balance = useraccount.balance - dto.total
-
-        product_stock = productinfo.amount - dto.product_amount
-
+        product_stock = int(productinfo.amount) - int(dto.product_amount)
+    
         useraccount.balance = after_purchase_balance
         productinfo.amount = product_stock
-
         ProcessPurchase = self.UserRepo.ProcessPurchase(useraccount,productinfo)
+        
         if ProcessPurchase['success'] == True:
             purchase_record = {'buyer':useraccount.user,
                                "product_item":productinfo.name,
@@ -276,10 +310,17 @@ class UserService:
                 }
             return Account_info
     
-    def CreateBalanceDeposit(self,dto:CreateAccountDto):
+    def Receiveresult(self,dto:ReceiveresultDto):
         dto.check()
-        account = self.UserRepo.CreateBalanceDeposit(dto.customer_id,dto.account_number,dto.balance,dto.remark)
-        return account
+        ## 0.獲取客戶帳戶
+        Account = self.UserRepo.getAccountById(dto.customer_id)
+        ## 1.客戶金額增加
+        Account.balance = Account.balance + dto.amount
+        AddCustomerBalance = self.UserRepo.AddCustomerBalance(Account) 
+        ## 2.紀錄儲值
+        if AddCustomerBalance['success'] == True:       
+            topuprecord = self.UserRepo.TopupSuccessRecord(dto.amount,dto.customername,dto.account_number,Account.balance)
+            return topuprecord
 
     def getPurchaseRecordsById(self, customer_id):
         if customer_id != 1:

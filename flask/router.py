@@ -6,7 +6,10 @@ from Middlewares.JWTMiddleware import JWTMiddleware
 allRoute = Blueprint('allRoute', __name__)
 
 @allRoute.post('/customer') #創建客戶
-def userRegister(): return UserController().create()
+def UserRegister(): return UserController().UserRegister()
+
+@allRoute.post('/serivice') #創建客服
+def SeriviceRegister(): return UserController().SeriviceRegister()
 
 @allRoute.post('/login') #登入
 def userLogin(): return UserController().login()
@@ -108,7 +111,6 @@ def CreatePurchaseRecord(): return UserController().CreatePurchaseRecord()
 @JWTMiddleware.confirm_token 
 def GetPurchaseRecord(): return UserController().GetPurchaseRecord()
 
-
 ## 儲值 : 
 @allRoute.post('/account/create_payment')   #用戶儲值
 @JWTMiddleware.confirm_token  
@@ -117,4 +119,14 @@ def Accountdeposit(): return UserController().Accountdeposit()
 @allRoute.post('/account/receive_result')   #處理儲值結果
 def Receiveresult(): return UserController().Receiveresult()
 
+@allRoute.get('/account/topup_record')   #獲取儲值紀錄
+@JWTMiddleware.confirm_token  
+def getTopupRecordsInfo(): return UserController().getTopupRecordsInfo()
+
+
+# @allRoute.get('/account/trad_result')   #顯示儲值結果
+# def Receiveresult(): return UserController().Receiveresult()
+
+# @allRoute.post('/account/trad_result')   #顯示儲值結果
+# def Receiveresult(): return UserController().Receiveresult()
 

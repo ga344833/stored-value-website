@@ -119,15 +119,26 @@ class VerifyBankcardDto():
             raise ValueError('No selected state')
   
 class CreateAccountDto():
-    def __init__(self,customer_id:int,balance:int,account_number:str):
-        self.account_number = account_number
-        self.balance = balance
+    def __init__(self,customer_id,balance,account_number):       
         self.customer_id = customer_id
+        self.balance = balance
+        self.account_number = account_number
     def check(self):
         print("--1--")
         if self.customer_id == "":
             raise ValueError('No customer_id')
         
+class ReceiveresultDto():
+    def __init__(self,amount,customer_id,customername,account_number):
+        self.amount = amount        
+        self.customer_id = customer_id
+        self.customername = customername
+        self.account_number = account_number
+    def check(self):
+        print("--1--")
+        if self.customer_id == "":
+            raise ValueError('No customer_id')
+
 class CreatePurchaseRecordDto():
     def __init__(self,customer_id:int,buyer:str,product_item:str,item_id:int,product_amount:int,total:int,buyer_balance:int,after_purchase_balance:int):
         self.customer_id = customer_id

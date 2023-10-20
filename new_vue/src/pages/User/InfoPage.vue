@@ -81,7 +81,7 @@
     <router-link to="/user/homepage" class="btn btn-primary">前往購物</router-link>
   </div>
   <div class="col">
-    <TopUp></TopUp>
+    <TopUp :account="account"></TopUp>
   </div>
 </div>
 </div>

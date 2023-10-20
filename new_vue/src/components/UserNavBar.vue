@@ -37,7 +37,7 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" aria-current="page">
-              <router-link to="/user/info">儲值紀錄</router-link>
+              <router-link to="/user/topuprecord">儲值紀錄</router-link>
             </a>
           </li>
           <li class="nav-item">

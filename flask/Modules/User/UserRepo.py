@@ -1,5 +1,5 @@
 from OrmModels.DB import session
-from Modules.User.Model import User,Bankcard,Account,Deposit,Product,Purchase_record
+from Modules.User.Model import User,Bankcard,Account,Deposit,Product,Purchase_record,Topup_record
 import redis
 import json
 from datetime import datetime
@@ -7,27 +7,64 @@ class UserRepo:
     def __init__(self):
         self.db = session
     
-    def create(self , fullname:str , phone:str , email:str , username:str , password:str , gender:str , register_time=None , state=None):
+    def UserRegister(self , fullname:str , phone:str , email:str , username:str , hashed_password , gender:str ,salt, register_time=None , state=None):
         try:
-            customer = self.db.query(User).filter_by(username=username).first()
-            if customer:
+            check_password = self.db.query(User).filter_by(password=hashed_password).first()
+            check_username = self.db.query(User).filter_by(username=username).first()
+            if check_password:
+                return {"success":False,"message": "password has been used."}
+            elif check_username:
                 return {"success":False,"message": "username has been used."}
             else:
-                new_user = User(fullname=fullname,phone=phone,email=email,username=username,password=password
-                                ,gender=gender,internal="0",register_time=datetime.now(),state="waiting")
+                new_user = User(fullname=fullname,phone=phone,email=email,username=username,password=hashed_password
+                                ,gender=gender,internal="0",salt=salt,register_time=datetime.now(),state="waiting")
                 self.db.add(new_user)
                 self.db.commit()                
                 return {"success":True,
                         "message":str(fullname)+" success create"}
         except:
             return {"success":False,"message": "An error occurred while Create customer data."}
-        
+
+    def SeriviceRegister(self , fullname:str , username:str , hashed_password  ,salt, register_time=None , state=None):
+        try:
+            check_password = self.db.query(User).filter_by(password=hashed_password).first()
+            check_username = self.db.query(User).filter_by(username=username).first()
+            if check_password:
+                return {"success":False,"message": "password has been used."}
+            elif check_username:
+                return {"success":False,"message": "username has been used."}
+            else:
+                new_user = User(fullname=fullname,phone='null',email='null',username=username,password=hashed_password
+                                ,gender='null',internal="1",salt=salt,register_time=datetime.now(),state="waiting")
+                self.db.add(new_user)
+                self.db.commit()                
+                return {"success":True,
+                        "message":str(fullname)+" success create"}
+        except:
+            return {"success":False,"message": "An error occurred while Create customer data."}
+           
     def getUserByName(self , userName:str)->dict:
         try :            
             userinfo = self.db.query(User).filter_by(username=userName).first()            
             return userinfo
         except Exception as e:
             return {"error": "An error occurred while fetching customer data."}
+        
+    def getSaltinfo(self , userName:str)->str:
+        try :            
+            salt = self.db.query(User.salt).filter_by(username=userName).first()            
+            return str(salt[0])       
+        except Exception as e:
+            return {"error": "An error occurred while fetching data."}
+    
+    def login(self , hashed_password)->dict:
+        userinfo = self.db.query(User).filter_by(password=hashed_password).first()   
+        try :            
+            userinfo = self.db.query(User).filter_by(password=hashed_password).first()            
+            return userinfo
+        
+        except Exception as e:
+            return {"error": "An error occurred while fetching data."}
     
     def getCustomersInfo(self): 
         try :
@@ -239,9 +276,13 @@ class UserRepo:
             return {"error": "An error occurred while fetching customer data. :"}
 
     
-    def CreateBalanceDeposit(self , customer_id:int,account_number:str,balance:int,remark:str):
+    def TopupSuccessRecord(self , amount  , customername , account_number , user_balance):
         try:
-            record = Deposit(user_id=customer_id,account_number=account_number,amount=balance,remark=remark,state='waiting')
+            record = Topup_record(user=customername,
+                                  account_number=account_number,
+                                  topup_balance=amount,
+                                  topup_time=datetime.now(),
+                                  user_balance=user_balance)
             self.db.add(record)
             self.db.commit()
             return {'success': True, 'message': 'Success updated Deposit info'}
@@ -308,6 +349,34 @@ class UserRepo:
         except Exception as e:
             return {"error": "An error occurred while fetching customer data."}
         
+    def getAllTopupRecordsInfo(self): 
+        try :
+            topup_records = self.db.query(Topup_record).all()
+            topup_records_data = [{"id": topup_record.id,             
+                            "user": topup_record.user,
+                            "account_number" : topup_record.account_number,
+                            "topup_balance": topup_record.topup_balance,
+                            "topup_time":topup_record.topup_time,
+                            "user_balance":topup_record.user_balance
+                            } for topup_record in topup_records]            
+            return topup_records_data
+        except Exception as e:
+            return {"error": "An error occurred while fetching customer data."}
+        
+    def getTopupRecordsInfo(self,username): 
+        try :
+            topup_records = self.db.query(Topup_record).filter_by(user=username).all()
+            topup_records_data = [{"id": topup_record.id,             
+                            "user": topup_record.user,
+                            "account_number" : topup_record.account_number,
+                            "topup_balance": topup_record.topup_balance,
+                            "topup_time":topup_record.topup_time,
+                            "user_balance":topup_record.user_balance
+                            } for topup_record in topup_records]            
+            return topup_records_data
+        except Exception as e:
+            return {"error": "An error occurred while fetching customer data."}
+        
     def CreatePurchaseRecord(self ,customer_id:int,buyer:str,product_item:str,item_id:int,product_amount:int,total:int,buyer_balance:int,after_purchase_balance:int):
         try:
             purchase_record = Purchase_record(buyer=buyer,
@@ -336,6 +405,16 @@ class UserRepo:
             print(e)
             return {'success': False, 'message': "Fail to change useraccount&productinfo,plz check SQL"}
    
+    def AddCustomerBalance(self ,Account):
+        try:            
+            self.db.add(Account)
+            self.db.commit()
+            return {'success': True, 'message': 'Success Add Balance'}
+        except Exception as e:
+            print(e)
+            return {'success': False, 'message': "Fail to Add Balance,plz check SQL"}
+   
+
     def getproductInfo(self,product_item:str): 
         try :
             product = self.db.query(Product).filter_by(name=product_item).first()   

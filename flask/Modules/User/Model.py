@@ -38,8 +38,9 @@ class User(Base):
     register_time = Column(DateTime(0), unique=True, nullable=False)
     profile_image = Column(BLOB, nullable=True)
     state = Column(String(80), unique=True, nullable=False)
+    salt = Column(String(80), unique=True, nullable=False)
 
-    def __init__(self , fullname:str , phone:str , email:str , username:str, password:str , gender:str , internal:str , register_time:None
+    def __init__(self , fullname:str , phone:str , email:str , username:str, password:str , gender:str , internal:str ,salt:str, register_time:None
                  ,country=None, idtype=None, idnumber=None, profile_image=None,state=None):
         self.fullname = fullname
         self.phone = phone
@@ -54,6 +55,7 @@ class User(Base):
         self.idnumber = idnumber  # 新添加的字段
         self.profile_image = profile_image  # 新添加的字段
         self.state = state
+        self.salt = salt
     
     def serialize(self):
         user_schema = UserSchema()
@@ -161,3 +163,23 @@ class Purchase_record(Base):
         self.item_id = item_id
         self.buyer_balance = buyer_balance
         self.after_purchase_balance = after_purchase_balance
+
+class Topup_record(Base):
+    
+    __tablename__ = 'topup_record'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user = Column(String(80), unique=True, nullable=False)
+    account_number = Column(String(80), unique=True, nullable=False)
+    topup_balance = Column(Integer, unique=True, nullable=False)
+    topup_time = Column(DateTime(0), nullable=False)
+    user_balance = Column(Integer, unique=True, nullable=False)
+    
+
+    def __init__(self , user:str , topup_time:None  , account_number:str, topup_balance:int , user_balance:int):
+        self.user = user
+        self.topup_time = topup_time
+        self.account_number = account_number
+        self.topup_balance = topup_balance
+        self.user_balance = user_balance
+

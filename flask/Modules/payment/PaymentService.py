@@ -12,7 +12,7 @@ class PaymentService:
         spec.loader.exec_module(module)
 
 
-    def Accountdeposit(self,customer_id,amount,account,customername):
+    def Accountdeposit(self,user_id,amount,account,customername):
         spec = importlib.util.spec_from_file_location(
             "ecpay_payment_sdk",
             "./Modules/payment/ecpay_payment_sdk.py"
@@ -27,7 +27,7 @@ class PaymentService:
             'TotalAmount': amount,
             'TradeDesc': '訂單測試',
             'ItemName': '商品1#商品2',
-            'ReturnURL': 'https://55ec-122-118-12-142.ngrok-free.app/api/account/receive_result',
+            'ReturnURL': ' https://8a52-122-118-21-87.ngrok-free.app/api/account/receive_result',
             'ChoosePayment': 'ALL',
             'ClientBackURL': 'https://www.ecpay.com.tw/client_back_url.php',
             'ItemURL': 'https://www.ecpay.com.tw/item_url.php',
@@ -39,7 +39,7 @@ class PaymentService:
             'IgnorePayment': '',
             'PlatformID': '',
             'InvoiceMark': 'N',
-            'CustomField1': str(customer_id),
+            'CustomField1': str(user_id),
             'CustomField2': str(customername),
             'CustomField3': str(account),
             'CustomField4': 'testpay',
@@ -74,7 +74,7 @@ class PaymentService:
 
         inv_params = {
             # 'RelateNumber': 'Tea0001', # 特店自訂編號
-            'CustomerID': str(customer_id), # 客戶編號
+            'CustomerID': str(user_id), # 客戶編號
             # 'CustomerIdentifier': '53348111', # 統一編號
             'CustomerName': str(customername),
             'CustomerAddr': str(account),

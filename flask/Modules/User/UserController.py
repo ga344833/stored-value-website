@@ -21,16 +21,13 @@ class UserController:
                 raise ValueError('data type error')    
 
             result = self.UserService.login(dto)
-            print('--1--')
-            print(result)
-            token = self.UserService.generate_token(result[0])
-            print('--2--')
+            print('--2--') 
             return make_response(
                 jsonify(
                     {
                         "success":True,
                         "code":result[1],
-                        "token":token,
+                        "token":result[2],
                     }
                 )
             )
@@ -122,37 +119,27 @@ class UserController:
         result = self.UserService.getproductsInfo()
         return make_response(jsonify({'success':True,'allinfo':result,'allsum':len(result)}))
 
-    def getCustomerInfo(self,customer_id): ## 客服或取客戶資訊
-        print('--UserController stage--')
-        servicer_id = g.token.get('sub')
-        print("servicer_id : "+str(servicer_id))
-        if servicer_id == 1: ## 篩選是否為客服人員、避免API被盜用、後續再規劃
+    def getCustomerInfo(self,customer_id): 
+        try: 
             result = self.UserService.getCustomerById(customer_id)
             return result 
-        else:
-            return make_response(jsonify({'success':False,'message':'Non service staff'}))
-
-    def verifyCustomer(self,customer_id): ## 客服驗證資料
+        except Exception as e:
+            return make_response(jsonify({'success':False,'message':str(e)}))
+        
+    def verifyCustomer(self,customer_id): 
         print('--UserController stage--')
-        servicer_id = g.token.get('sub')
-        print("servicer_id : "+str(servicer_id))
         data = request.get_json()
         state = data.get("state")
         dto = VerifyCustomerDto(customer_id,state)
-        if servicer_id == 1: ## 篩選是否為客服人員、避免API被盜用、後續再規劃
+        try: 
             result = self.UserService.verifyCustomer(dto)
             return make_response(jsonify({'success':True,'message':'state success changed'})) 
-        else:
-            return make_response(jsonify({'success':False,'message':'Non service staff'}))
-
-    def get_customer_profile(self):      
+        except Exception as e:
+            return make_response(jsonify({'success':False,'message':str(e)}))
+    def get_customer_profile(self,user_id):      
         print('--UserController stage--')
         try:
-            # 从 JWT token 中获取客户的用户 ID
-            customer_id = g.token.get('sub')
-            print("customer_id : "+str(customer_id))
-            # 使用 customer_id 查询客户的个人信息
-            customer_info = self.UserService.getCustomerById(customer_id)
+            customer_info = self.UserService.getCustomerById(user_id)
             # print(customer_info)
             if customer_info:
                 return make_response(
@@ -203,19 +190,14 @@ class UserController:
         except Exception as e:
             return make_response(jsonify({'success':False,'message':str(e)}))
 
-    def patch_customer_profile(self):      
+    def patch_customer_profile(self,user_id):      
         try:
-            # 从 JWT token 中获取客户的用户 ID
-            customer_id = g.token.get('sub')
-            print("customer_id : "+str(customer_id))
-            # 使用 customer_id 查询客户的个人信息
             if request.is_json:
                 data = request.get_json()
                 country = data.get("country")
                 idtype = data.get("idtype")
                 idnumber = data.get("idnumber")
-                dto = perfectInfoDto(customer_id,country , idtype , idnumber)
-                print(dto.customer_id)
+                dto = perfectInfoDto(user_id,country , idtype , idnumber)
             patch_customer_info = self.UserService.patchCustomerInfo(dto)
             if patch_customer_info:
                 return make_response(
@@ -260,12 +242,11 @@ class UserController:
         except Exception as e:
             return make_response(jsonify({'success':False,'message':str(e)}),500)
 
-    def upload_image(self):
+    def upload_image(self,user_id):
         print('--UserController stage--')
         try:
             # 从 JWT token 中获取客户的用户 ID
-            customer_id = g.token.get('sub')
-            print("customer_id : "+str(customer_id))
+            
             # 使用 customer_id 查询客户的个人信息
             if 'file' not in request.files:
                 return make_response(jsonify({'success': False, 'message': 'No file part'}), 400)
@@ -273,7 +254,7 @@ class UserController:
             # 检查文件名是否为空
             if file.filename == '':
                 return make_response(jsonify({'success': False, 'message': 'No selected file'}), 400)
-            dto = ImageDto(customer_id,file)
+            dto = ImageDto(user_id,file)
             upload_info = self.UserService.uploadInfo(dto)
             #patch_customer_info = self.UserService.patchCustomerInfo(dto)
             if upload_info:
@@ -370,28 +351,23 @@ class UserController:
 
     def CreateAccount(self,customer_id):
         try:
-            servicer_id = g.token.get('sub')
-            print("servicer_id : "+str(servicer_id))
-            if servicer_id == 1: ## 篩選是否為客服人員、避免API被盜用、後續再規劃
-                if request.is_json:
-                    data = request.get_json()
-                    account_number = data.get("account_number")
-                    balance = data.get("balance")
-                    dto = CreateAccountDto(customer_id,balance,account_number)
-                account_info = self.UserService.CreateAccount(dto)
-                if account_info:
-                    return make_response(jsonify(account_info))
-                else:
-                    return make_response(jsonify({'success':False,'message':"Customer not found"}),404)
+            if request.is_json:
+                data = request.get_json()
+                account_number = data.get("account_number")
+                balance = data.get("balance")
+                dto = CreateAccountDto(customer_id,balance,account_number)
+            account_info = self.UserService.CreateAccount(dto)
+            if account_info:
+                return make_response(jsonify(account_info))
+            else:
+                return make_response(jsonify({'success':False,'message':"Customer not found"}),404)
         except Exception as e:
             return make_response(jsonify({'success':False,'message':str(e)}),500)
 
-    def get_account_profile(self):      
+    def get_account_profile(self,user_id):      
         print('--UserController stage--')
         try:
-            customer_id = g.token.get('sub')
-            print("customer_id : "+str(customer_id))
-            AccountInfo = self.UserService.getAccountById(customer_id)
+            AccountInfo = self.UserService.getAccountById(user_id)
             if AccountInfo:
                 return make_response(jsonify({"success": True,
                         "Account": AccountInfo}),)
@@ -401,24 +377,21 @@ class UserController:
             return make_response(jsonify({'success':False,'message':str(e)}))
 
     def getAccountInfo(self,customer_id):
-        print('--UserController stage--')
-        servicer_id = g.token.get('sub')
-        print("servicer_id : "+str(servicer_id))
-        if servicer_id == 1: ## 篩選是否為客服人員、避免API被盜用、後續再規劃
-            print("customer_id : "+str(customer_id))
+        try:
             result = self.UserService.getAccountById(customer_id)
-            return result 
+            return result
+        except Exception as e:
+            return make_response(jsonify({'success':False,'message':str(e)}))
         else:
             return make_response(jsonify({'success':False,'message':'Non service staff'}))
  
-    def Accountdeposit(self):
-        customer_id = g.token.get('sub')
+    def Accountdeposit(self,user_id):        
         data = request.get_json()
         amount = data.get("amount")
         account = data.get("account")
         customername = data.get("customername")
         
-        result = self.PaymentService.Accountdeposit(customer_id,amount,account,customername)
+        result = self.PaymentService.Accountdeposit(user_id,amount,account,customername)
         result = render_template('payment.html', form_html=result)
         return make_response(jsonify({'success':True,'message':result}))
     
@@ -486,9 +459,8 @@ class UserController:
                         "message":str(msg)
                     }),400)
 
-    def CreatePurchaseRecord(self):
+    def CreatePurchaseRecord(self,user_id):
         try:
-            customer_id = g.token.get('sub')
             if request.is_json:
                 data = request.get_json()
                 buyer = data.get("buyer")
@@ -498,7 +470,7 @@ class UserController:
                 total = data.get("total")
                 buyer_balance = data.get("buyer_balance")
                 after_purchase_balance = data.get("after_purchase_balance")
-                dto = CreatePurchaseRecordDto(customer_id,buyer,product_item,item_id,product_amount,total,buyer_balance,after_purchase_balance)
+                dto = CreatePurchaseRecordDto(user_id,buyer,product_item,item_id,product_amount,total,buyer_balance,after_purchase_balance)
             info = self.UserService.CreatePurchaseRecord(dto)
             if info:
                 return make_response(jsonify(info))
@@ -507,15 +479,14 @@ class UserController:
         except Exception as e:
             return make_response(jsonify({'success':False,'message':str(e)}),500)
         
-    def ProcessPurchase(self):
+    def ProcessPurchase(self,user_id):
         try:
-            customer_id = g.token.get('sub')
             if request.is_json:
                 data = request.get_json()
                 product_item = data.get("product_item")
                 product_amount = data.get("product_amount")
                 total = data.get("total")
-                dto = ProcessPurchaseDto(customer_id,product_item,product_amount,total)
+                dto = ProcessPurchaseDto(user_id,product_item,product_amount,total)
             info = self.UserService.ProcessPurchase(dto)
             if info:
                 return make_response(jsonify(info))
@@ -524,26 +495,35 @@ class UserController:
         except Exception as e:
             return make_response(jsonify({'success':False,'message':str(e)}),500)
         
-    def GetPurchaseRecord(self):      
+    def GetAllPurchaseRecord(self):      
         print('--UserController stage--')
-        try:
-            customer_id = g.token.get('sub')
-            print("customer_id : "+str(customer_id))            
-            PurchaseRecords = self.UserService.getPurchaseRecordsById(customer_id)      
+        try:          
+            PurchaseRecords = self.UserService.getAllPurchaseRecordsById()      
             return make_response(jsonify({"success": True,
                     "PurchaseRecords": PurchaseRecords}),)            
         except Exception as e:
             return make_response(jsonify({'success':False,'message':str(e)}))
         
-    def getTopupRecordsInfo(self):
+    def GetPurchaseRecord(self,user_id):      
         print('--UserController stage--')
         try:
-            servicer_id = g.token.get('sub')
-            if servicer_id == 1:    
-                result = self.UserService.getAllTopupRecordsInfo()
-                return make_response(jsonify({'success':True,'allinfo':result,'allsum':len(result)}))
-            else:
-                result = self.UserService.getTopupRecordsInfo(servicer_id)
-                return make_response(jsonify({'success':True,'allinfo':result,'allsum':len(result)}))
+            PurchaseRecords = self.UserService.getPurchaseRecordsById(user_id)      
+            return make_response(jsonify({"success": True,
+                    "PurchaseRecords": PurchaseRecords}),)            
+        except Exception as e:
+            return make_response(jsonify({'success':False,'message':str(e)}))
+        
+    def getAllTopupRecordsInfo(self):
+        try:                
+            result = self.UserService.getAllTopupRecordsInfo()
+            return make_response(jsonify({'success':True,'allinfo':result,'allsum':len(result)}))
+        except Exception as e:
+            return make_response(jsonify({'success':False,'message':str(e)}))
+        
+    def getTopupRecordsInfo(self,user_id):
+        print('--UserController stage--')
+        try:
+            result = self.UserService.getTopupRecordsInfo(user_id)
+            return make_response(jsonify({'success':True,'allinfo':result,'allsum':len(result)}))
         except Exception as e:
             return make_response(jsonify({'success':False,'message':str(e)}))

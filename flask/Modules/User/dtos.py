@@ -46,8 +46,8 @@ class registerDto():
         print("--2--")
 
 class perfectInfoDto():
-    def __init__(self , customer_id:int , country:str , idtype:str , idnumber:str):
-        self.customer_id = customer_id
+    def __init__(self , user_id:int , country:str , idtype:str , idnumber:str):
+        self.user_id = user_id
         self.country = country
         self.idtype = idtype
         self.idnumber = idnumber
@@ -58,8 +58,8 @@ class perfectInfoDto():
             raise ValueError('ID_number required')
 
 class ImageDto():
-    def __init__(self ,customer_id:int, file:bytes):
-        self.customer_id = customer_id
+    def __init__(self ,user_id:int, file:bytes):
+        self.user_id = user_id
         self.file = file
         
     def check(self):
@@ -123,8 +123,7 @@ class CreateAccountDto():
         self.customer_id = customer_id
         self.balance = balance
         self.account_number = account_number
-    def check(self):
-        print("--1--")
+    def check(self):        
         if self.customer_id == "":
             raise ValueError('No customer_id')
         
@@ -134,14 +133,13 @@ class ReceiveresultDto():
         self.customer_id = customer_id
         self.customername = customername
         self.account_number = account_number
-    def check(self):
-        print("--1--")
+    def check(self):       
         if self.customer_id == "":
             raise ValueError('No customer_id')
 
 class CreatePurchaseRecordDto():
-    def __init__(self,customer_id:int,buyer:str,product_item:str,item_id:int,product_amount:int,total:int,buyer_balance:int,after_purchase_balance:int):
-        self.customer_id = customer_id
+    def __init__(self,user_id:int,buyer:str,product_item:str,item_id:int,product_amount:int,total:int,buyer_balance:int,after_purchase_balance:int):
+        self.user_id = user_id
         self.buyer = buyer
         self.product_item = product_item
         self.item_id = item_id
@@ -151,17 +149,17 @@ class CreatePurchaseRecordDto():
         self.after_purchase_balance = after_purchase_balance
     def check(self):
         print("--2--")
-        if self.customer_id == "":
+        if self.user_id == "":
             raise ValueError('No customer_id')
         
 class ProcessPurchaseDto():
-    def __init__(self,customer_id:int,product_item:str,product_amount:int,total:int):
-        self.customer_id = customer_id
+    def __init__(self,user_id:int,product_item:str,product_amount:int,total:int):
+        self.user_id = user_id
         self.product_item = product_item
         self.product_amount = product_amount
         self.total = total
     def check(self):
         print("--2--")
-        if self.customer_id == "":
+        if self.user_id == "":
             raise ValueError('No customer_id')
         

@@ -47,7 +47,7 @@ export default {
         Authorization: `Bearer ${this.token}`,
       };
       axios
-        .get("/api/account/topup_record", { headers })
+        .get("/api/account/all_topup_record", { headers })
         .then((response) => {
           this.recordsData = response.data.allinfo;
         })

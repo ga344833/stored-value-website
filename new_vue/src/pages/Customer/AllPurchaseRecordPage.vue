@@ -51,7 +51,7 @@ export default {
         Authorization: `Bearer ${this.token}`,
       };
       axios
-        .get("/api/purchases", { headers })
+        .get("/api/purchases/all", { headers })
         .then((response) => {
           this.productsData = response.data.PurchaseRecords;
         })

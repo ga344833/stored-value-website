@@ -58,11 +58,9 @@ class UserRepo:
             return {"error": "An error occurred while fetching data."}
     
     def login(self , hashed_password)->dict:
-        userinfo = self.db.query(User).filter_by(password=hashed_password).first()   
         try :            
             userinfo = self.db.query(User).filter_by(password=hashed_password).first()            
-            return userinfo
-        
+            return userinfo        
         except Exception as e:
             return {"error": "An error occurred while fetching data."}
     
@@ -103,9 +101,9 @@ class UserRepo:
         except Exception as e:
             return {"error": "An error occurred while fetching customer data."}
     
-    def getCustomerById(self,customer_id):
+    def getCustomerById(self,user_id):
         try:
-            customer = self.db.query(User).filter_by(id=customer_id).first()
+            customer = self.db.query(User).filter_by(id=user_id).first()
             return customer
         except Exception as e:
             return {"error": "An error occurred while fetching customer data. :"}
@@ -128,9 +126,9 @@ class UserRepo:
         except Exception as e:
             return {"error": "An error occurred while fetching customer data. :"}
 
-    def patchCustomerInfo(self, customer_id:int , country:str ,idtype:str,idnumber:str):
+    def patchCustomerInfo(self, user_id:int , country:str ,idtype:str,idnumber:str):
         try:
-            customer = self.db.query(User).filter_by(id=customer_id).first()
+            customer = self.db.query(User).filter_by(id=user_id).first()
             if not customer:
                 return {'success': False, 'message': 'Customer not found'}
             customer.country = country
@@ -159,9 +157,9 @@ class UserRepo:
             return {"error": "An error occurred,plz check python"}
 
          
-    def uploadInfo(self,customer_id:int,file:bytes):
+    def uploadInfo(self,user_id:int,file:bytes):
         try:
-            customer = self.db.query(User).filter_by(id=customer_id).first()
+            customer = self.db.query(User).filter_by(id=user_id).first()
             if not customer:
                 return {'success': False, 'message': 'Customer not found'}
             image_data = file.read()
@@ -213,19 +211,13 @@ class UserRepo:
             return {"error": "An error occurred while fetching customer data. :"}
 
     def CreateAccount(self ,customer_id:int,balance:int,account_number:str):
-        print("--2--")
         try:
-            ## check user state
-            print(customer_id)
             userinfo = self.db.query(User).filter_by(id=customer_id).first()
-            print(userinfo)
             if userinfo.state != "approved":
                 return {'success': False, 'message': "user state not approved"}
-            print("--3--")
             account = self.db.query(Account).filter_by(user_idnumber=userinfo.idnumber).first()
             if account:
                 return {'success': False, 'message': "already have account"}
-            print("--4--")
             account = Account(user=userinfo.fullname,user_idnumber=userinfo.idnumber,account_number=account_number,balance=balance,state="unforzen")
             self.db.add(account)
             self.db.commit()
@@ -234,17 +226,17 @@ class UserRepo:
             print(e)
             return {'success': False, 'message': "Fail to updated account,plz check SQL"}
     
-    def getAccountById(self,customer_id):
+    def getAccountById(self,user_id):
         try:
-            userinfo = self.db.query(User).filter_by(id=customer_id).first()
+            userinfo = self.db.query(User).filter_by(id=user_id).first()
             account = self.db.query(Account).filter_by(user_idnumber=userinfo.idnumber).first()
             return account
         except Exception as e:
             return {"error": "An error occurred while fetching customer data. :"}
 
-    def getPurchaseRecordsById(self,customer_id):
+    def getPurchaseRecordsById(self,user_id):
         try:
-            userinfo = self.db.query(User).filter_by(id=customer_id).first()
+            userinfo = self.db.query(User).filter_by(id=user_id).first()
             purchase_records = self.db.query(Purchase_record).filter_by(buyer=userinfo.fullname).all()
             purchase_record_data = [{"id":purchase_record.id,
                 "buyer":purchase_record.buyer,
@@ -259,7 +251,7 @@ class UserRepo:
         except Exception as e:
             return {"error": "An error occurred while fetching customer data. :"}
         
-    def getAllPurchaseRecordsById(self,customer_id):
+    def getAllPurchaseRecordsById(self):
         try:
             purchase_records = self.db.query(Purchase_record).all()
             purchase_record_data = [{"id":purchase_record.id,
@@ -377,7 +369,7 @@ class UserRepo:
         except Exception as e:
             return {"error": "An error occurred while fetching customer data."}
         
-    def CreatePurchaseRecord(self ,customer_id:int,buyer:str,product_item:str,item_id:int,product_amount:int,total:int,buyer_balance:int,after_purchase_balance:int):
+    def CreatePurchaseRecord(self ,user_id:int,buyer:str,product_item:str,item_id:int,product_amount:int,total:int,buyer_balance:int,after_purchase_balance:int):
         try:
             purchase_record = Purchase_record(buyer=buyer,
                                      product_item=product_item,

@@ -19,7 +19,6 @@ class UserService:
         salt = os.urandom(16).hex()
         hashed_password = UserService.hash_password(dto.password,
                                                     salt)
-        print(hashed_password)
         result = self.UserRepo.UserRegister(dto.fullname ,
                                              dto.phone ,
                                             dto.email ,
@@ -33,21 +32,25 @@ class UserService:
         salt = os.urandom(16).hex()
         hashed_password = UserService.hash_password(password,
                                                     salt)
-        print(hashed_password)
         result = self.UserRepo.SeriviceRegister(fullname , username , hashed_password,salt)
         return result
 
     # 先依照username找出user 再比對密碼
     def login(self , dto:loginDto):
         dto.check()
+        print('--1--') 
         salt = self.UserRepo.getSaltinfo(dto.userName)
+        print(salt)
+        print('--2--') 
         hashed_password = UserService.hash_password(dto.passWord,
                                                     salt)
+        print(hashed_password)
+        print('--3--') 
         userinfo_dict = self.UserRepo.login(hashed_password)
-        if userinfo_dict.internal == '0':
-            return [userinfo_dict,0]
-        if userinfo_dict.internal == '1':
-            return [userinfo_dict,1]
+        print(userinfo_dict.internal)
+        token = UserService.generate_token(userinfo_dict)
+        print('--4--')        
+        return [userinfo_dict,int(userinfo_dict.internal),token]
     
     def getCustomersInfo(self):
         CustomersInfo = self.UserRepo.getCustomersInfo()
@@ -65,15 +68,15 @@ class UserService:
         TopupRecordsInfo = self.UserRepo.getAllTopupRecordsInfo()
         return TopupRecordsInfo
     
-    def getTopupRecordsInfo(self,servicer_id):
-        customer = self.UserRepo.getCustomerById(servicer_id)
+    def getTopupRecordsInfo(self,user_id):
+        customer = self.UserRepo.getCustomerById(user_id)
         username = customer.fullname
         TopupRecordsInfo = self.UserRepo.getTopupRecordsInfo(username)
         return TopupRecordsInfo
 
     def patchCustomerInfo(self,dto:perfectInfoDto):
         dto.check()
-        result = self.UserRepo.patchCustomerInfo(dto.customer_id , dto.country , dto.idtype , dto.idnumber)
+        result = self.UserRepo.patchCustomerInfo(dto.user_id , dto.country , dto.idtype , dto.idnumber)
         return result
     
     def patchProductInfo(self,dto:PatchProductDto):
@@ -83,7 +86,7 @@ class UserService:
     
     def uploadInfo(self,dto:ImageDto):
         dto.check()
-        result = self.UserRepo.uploadInfo(dto.customer_id , dto.file)
+        result = self.UserRepo.uploadInfo(dto.user_id , dto.file)
         return result
     
     def uploadBankcardInfo(self,dto:ImageDto):
@@ -91,8 +94,8 @@ class UserService:
         result = self.UserRepo.uploadBankcardInfo(dto.customer_id , dto.file)
         return result
 
-    def getCustomerById(self, customer_id):
-        customer = self.UserRepo.getCustomerById(customer_id)
+    def getCustomerById(self, user_id):
+        customer = self.UserRepo.getCustomerById(user_id)
         try:
             customer_info = {
                 'id' : customer.id,
@@ -202,13 +205,13 @@ class UserService:
         return customer
     
     # 生成 JWT 令牌
-    def generate_token(self,userinfo_dict):
-        print(userinfo_dict)
-        print(userinfo_dict.id)
+    def generate_token(userinfo_dict):
+        print('--3.5--')
         payload = {
-            'sub' : int(userinfo_dict.internal),
+            'internal_type' : int(userinfo_dict.internal),
             'exp' : datetime.utcnow() + timedelta(days=1),
-            'iat' : datetime.utcnow()
+            'iat' : datetime.utcnow(),
+            'user_id' : int(userinfo_dict.id)
         }
         token = jwt.encode(payload,'yu023468',algorithm='HS256')
         return token
@@ -246,7 +249,7 @@ class UserService:
     
     def CreatePurchaseRecord(self,dto:CreatePurchaseRecordDto):
         dto.check()
-        PurchaseRecord = self.UserRepo.CreatePurchaseRecord(dto.customer_id,
+        PurchaseRecord = self.UserRepo.CreatePurchaseRecord(dto.user_id,
                                                             dto.buyer,
                                                             dto.product_item,dto.item_id,
                                                             dto.product_amount,dto.total
@@ -256,7 +259,7 @@ class UserService:
     
     def ProcessPurchase(self,dto:ProcessPurchaseDto):
         dto.check()
-        useraccount = self.UserRepo.getAccountById(dto.customer_id)
+        useraccount = self.UserRepo.getAccountById(dto.user_id)
         productinfo = self.UserRepo.getproductInfo(dto.product_item)
         buyer_balance = useraccount.balance
         after_purchase_balance = useraccount.balance - dto.total
@@ -277,8 +280,8 @@ class UserService:
         
         return purchase_record
 
-    def getAccountById(self, customer_id):
-        Account = self.UserRepo.getAccountById(customer_id)
+    def getAccountById(self, user_id):
+        Account = self.UserRepo.getAccountById(user_id)
         try:
             Account_info = {
                 'id' : Account.id,
@@ -322,11 +325,11 @@ class UserService:
             topuprecord = self.UserRepo.TopupSuccessRecord(dto.amount,dto.customername,dto.account_number,Account.balance)
             return topuprecord
 
-    def getPurchaseRecordsById(self, customer_id):
-        if customer_id != 1:
-            PurchaseRecords = self.UserRepo.getPurchaseRecordsById(customer_id)
-            return PurchaseRecords
-        if customer_id == 1:
-            PurchaseRecords = self.UserRepo.getAllPurchaseRecordsById(customer_id)
-            return PurchaseRecords
-    
+    def getAllPurchaseRecordsById(self):        
+        PurchaseRecords = self.UserRepo.getAllPurchaseRecordsById()
+        return PurchaseRecords    
+        
+    def getPurchaseRecordsById(self, user_id):
+        PurchaseRecords = self.UserRepo.getPurchaseRecordsById(user_id)
+        return PurchaseRecords
+        

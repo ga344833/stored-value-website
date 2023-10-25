@@ -1,32 +1,89 @@
-# 模擬儲值及客服管理網站實作
+# 用戶儲值與客服管理
 
-包含以下功能 :
+整合Vue Bootstrap、Flask MVC、MySQL 開發
+---
+### Flask MVC 分層架構
+#### Router <=> Controller <=> Service <=> Repository <=> Model <=> DB
 
-* 登入系統 :
-  
-1.分為客服、會員兩種身分，以 JWT TOKEN 紀錄登入身分並各自擁有其操作介面
+![image](https://github.com/ga344833/stored-value-website/assets/32910355/be2e8dbe-5e86-4719-97c2-4e11ba6fbe18)
 
-  ![image](https://github.com/ga344833/stored-value-website/assets/32910355/4ae0bb9c-4452-4d43-bd38-c06d93d3bf19)
-![image](https://github.com/ga344833/stored-value-website/assets/32910355/d8e8b7ca-42f1-4ed2-862f-dd61abeee06f)
+* dtos : (Data Transfer Objects) 定義數據傳輸的格式
+	* 可幫助數據從client端傳送到server端或其他模塊
+	  
+* Model : 模型層、用於定義Database
+	* 通常使用ORM來定義DB
+	  
+* UserController : 控制器層、處理HTTP請求、調用適當的服務
+	* function ，各項功能(登入、創建用戶等)都寫在這裡
+	  
+* UserRepo : 儲存庫層、執行DataBase查詢和操作
+	* 和DB互動並處理儲存、檢索數據等細節
+	  
+* UserService : 服務層、包含應用程式的核心邏輯、處裡來自Controller的請求
+	* 與各個模塊互動最頻繁的位置
+	* 初始化連結儲存層、function 連結dtos獲取資訊甚至檢核
+	* 檢核完畢後再次呼叫儲存層操作DB
+	* 動作完成後將結果回傳至Controller
+--- 
+### Vue 
+使用 router-view 作為 變動組件，層層包裹
+如同以下模板 ，採取主程式 > 頁面 > 組件等方式分層進行管理編程
 
-2.註冊及忘記密碼
+```	App (主程式) :
+		Login (頁面)
+		User (頁面)
+			UserNavBar (組件)
+		Customer (頁面)
+			CusNavBar (組件)
+		Info (頁面)
+		intro (頁面)
+		.... ```
 
-* 客服介面 : 客服可透過各列表查看各項紀錄、並擁有審核客戶資料、開通客戶虛擬帳戶、修改與新增商品列表等權限功能
-  
-1.包含客戶列表、商品列表、儲值紀錄、購買紀錄
-![image](https://github.com/ga344833/stored-value-website/assets/32910355/db322c8b-364d-4fb9-bf79-6c1f5b9b43fb)
-![image](https://github.com/ga344833/stored-value-website/assets/32910355/6870ac1b-8f0c-438a-8147-2a1e682ebf9f)
-![image](https://github.com/ga344833/stored-value-website/assets/32910355/771d10db-b9e9-424b-95ce-cffd9b104dad)
-![image](https://github.com/ga344833/stored-value-website/assets/32910355/4a456833-36f1-41a6-9853-d2569ddc11a0)
-![image](https://github.com/ga344833/stored-value-website/assets/32910355/52c6017f-02db-464c-b480-61c9ac07ec43)
+####  App.Vue
+  作為整支Vue最底部的組件，編輯頁面上層與底層，使用router-view將網頁中間區塊，以不同的分頁作為顯示對象，例如Login、User等等
+```
+<template>
+  <div id="app">
+    <div class="text-center my-3">
+      <div class="header-container">
+        <h2>johney simulation pay system</h2>
+      </div>
+      <div class="container">
+            <router-view></router-view> <!-- 中間的組件 隨著router 變動 -->
+      </div>
+    </div>
+    <div class="fixed-bottom">
+      <footer class="bg-light text-center text-lg-center">
+        <div class="footer-container">
+          © 2023 Copyright: francischi.com
+        </div>
+      </footer>
+    </div>
+  </div>
+</template>
+```
+#### main.js
+將程式的routes path定義，以便於不同的畫面呈現，此時App依然作為底層模板
+```
+const routes =[
+    {
+        path: '/',
+        component : LoginPage
+    }]
+```
+#### Pages
+頁面存放處，其中 main.js 可設置 children 將組件共用
+```
+path:'/user',
+        component : UserPage,
+        children:[
+            {
+                path:'intro',
+                component : IntroPage,
+            },
+            {
+                path:'info',
+                component : InfoPage,
+            }
+```
 
-
-
-
-
-* 會員介面 : 會員透過註冊後可登入系統、於個人介面完善資料提交審核，操作客服所開通的帳戶、進行儲值與購物
-
-1. 包含購物介面、個人資料、儲值紀錄、購買紀錄
-![image](https://github.com/ga344833/stored-value-website/assets/32910355/05f165c2-2632-4351-8156-13134aea8091)
-![image](https://github.com/ga344833/stored-value-website/assets/32910355/ac0a291a-008e-4805-bdbc-47f8a3d6686e)
-![image](https://github.com/ga344833/stored-value-website/assets/32910355/a9805518-610e-449a-b7dc-d1845b0d9da9)

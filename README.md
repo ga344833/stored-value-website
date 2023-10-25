@@ -37,7 +37,8 @@
 			CusNavBar (組件)
 		Info (頁面)
 		intro (頁面)
-		.... ```
+		....
+ ```
 
 ####  App.Vue
   作為整支Vue最底部的組件，編輯頁面上層與底層，使用router-view將網頁中間區塊，以不同的分頁作為顯示對象，例如Login、User等等
@@ -87,3 +88,8 @@ path:'/user',
             }
 ```
 
+實作紀錄 : 
+* [SOLID改善後端代碼](https://medium.com/@a0931992912/solid-%E5%AF%A6%E4%BD%9C-%E6%94%B9%E5%96%84%E5%BE%8C%E7%AB%AF%E4%BB%A3%E7%A2%BC-8ab89d94f70d)
+* [登入系統-雜湊加密實作](https://medium.com/@a0931992912/%E7%99%BB%E5%85%A5%E7%B3%BB%E7%B5%B1-%E9%9B%9C%E6%B9%8A%E5%8A%A0%E5%AF%86%E5%AF%A6%E4%BD%9C-479f90cfadb9)
+* [第三方金流串接](https://medium.com/@a0931992912/flask-%E7%AC%AC%E4%B8%89%E6%96%B9%E9%87%91%E6%B5%81%E4%B8%B2%E6%8E%A5%E5%AF%A6%E4%BD%9C-%E7%B6%A0%E7%95%8C-3f128e0af547)
+* [Docker 部屬網站](https://medium.com/@a0931992912/docker-%E9%83%A8%E5%B1%AC%E7%B6%B2%E7%AB%99-%E5%AF%A6%E4%BD%9C%E7%B4%80%E9%8C%84-88f4340026c1)

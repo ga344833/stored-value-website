@@ -29,14 +29,15 @@
 使用 router-view 作為 變動組件，層層包裹
 如同以下模板 ，採取主程式 > 頁面 > 組件等方式分層進行管理編程
 
-```	App (主程式) :
-		Login (頁面)
-		User (頁面)
-			UserNavBar (組件)
-		Customer (頁面)
-			CusNavBar (組件)
-		Info (頁面)
-		intro (頁面)
+```
+App (主程式) :
+	Login (頁面)
+	User (頁面)
+		UserNavBar (組件)
+	Customer (頁面)
+		CusNavBar (組件)
+	Info (頁面)
+	intro (頁面)
 		....
  ```
 
